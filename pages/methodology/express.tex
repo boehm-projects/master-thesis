@@ -1,0 +1,54 @@
+This chapter introduces a model implementation of the javascript server framework Express.js to to allow for testing using expoSE. 
+
+\section{General Structure}
+
+This section provides an explanation of the general structure of the model and the internal logic of the routing, request handling, with a particular focus on the parametrized routing logic. 
+
+\subsection{Routing} 
+
+Being the most crucial component of any server, routing must be designed accordingly to enable all the features ExpressJS provides, while removing all the ones intended for handling a genuine HTTP request. This means that the model mimics how Express builds its internal routing stack, handles any incoming request, and manipulates the response.  
+
+
+\subsection{Request Handling}
+\subsection{Parametrized Routing}
+It is noteworthy that the extraction of parameters sent as route variables must remain symbolic, for instance, when the route is defined as seen in \autoref{fig:param-route}, the request path might look like \lstinline[language=JavaScript, gobble=4]{var path = S.symbol("path", "/user/1");//}. This id then gets extracted from the path, resulting in an Object containing the key (the path variable name) and values (the request path value) seen in \autoref{fig:param-extracted}
+
+\begin{figure}[ht]
+    \begin{lstlisting}[language=JavaScript, gobble=4]
+    router.get('/user/:id', callback) 
+    \end{lstlisting}
+    \caption{Parameterized route}
+    \label{fig:param-route}
+\end{figure}
+
+
+
+
+\begin{figure}[ht]
+    \begin{lstlisting}[language=JavaScript, gobble=4]
+    const params =  {
+        keys: [ 'id' ],
+        values: [
+        ConcolicValue {
+          concrete: '1',
+          symbolic: [Expr],
+          _arrayType: undefined
+    }
+  ]
+}
+    \end{lstlisting}
+    \caption{Parameters extracted from the request path}
+    \label{fig:param-extracted}
+\end{figure}
+
+
+
+
+\section{Peculiarities}
+Specific features of the implementation due to the peculiarities of dynamic symbolic execution
+%\subsection{Implicit vs Explicit conditionals}
+%\subsubsection{re.match}
+
+\section{Usage}
+\subsection{Necessary Modifications}
+\subsection{Testing}\'?

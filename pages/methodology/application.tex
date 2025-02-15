@@ -1,0 +1,60 @@
+This chapter introduces the web application test, which demonstrates the possibility of testing the entire web application within the limitations aforementioned presented in \autoref{sec:limits}.
+
+
+
+This chapter is about detecting security issues in an web application using expoSE. It first describes the general idea, then shows examples of security vulnerabilities, mostly XSS vulnerabilities. 
+
+\section{XSS}
+
+\begin{tikzpicture}[node distance=2cm]
+
+
+% Define styles for the nodes and arrows
+
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=red!30]
+
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=orange!30]
+
+\tikzstyle{decision} = [diamond, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=green!30]
+
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+
+% Nodes
+
+\node (start) [startstop] {Start};
+
+\node (pro1) [process, below of=start] {Process 1};
+
+\node (dec1) [decision, below of=pro1, yshift=-1cm] {Decision 1};
+
+\node (pro2a) [process, below of=dec1, xshift=-3cm] {Process 2A};
+
+\node (pro2b) [process, below of=dec1, xshift=3cm] {Process 2B};
+
+\node (stop) [startstop, below of=pro2a] {Stop};
+
+
+% Arrows
+
+\draw  (start) -- (pro1);
+
+\draw  (pro1) -- (dec1);
+
+\draw  (dec1) -- node[anchor=east] {Yes} (pro2a);
+
+\draw  (dec1) -- node[anchor=west] {No} (pro2b);
+
+\draw [arrow] (pro2a) -- (stop);
+
+
+\end{tikzpicture}
+
+
+\section{Initial Test Plain JS Application}
+\subsection{Idea}
+\subsection{Test evaluation}
+\section{Express Application}
+\subsection{Server}
+\subsection{Client}
+\subsection{Necessary Modifications}

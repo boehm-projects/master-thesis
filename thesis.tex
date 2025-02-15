@@ -3,6 +3,8 @@
 \usepackage{tabularx}
 
 \usepackage{lipsum}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows, decorations}
 
 \usepackage{graphicx}
 \graphicspath{{images/}}
@@ -12,10 +14,20 @@
 \addtolength{\topmargin}{-1.6pt}
 
 \usepackage{microtype}
+\usepackage{color}
+\definecolor{light-gray}{gray}{0.80}
+\usepackage{placeins}
 
+\newcommand{\charactercount}[1]{
+\immediate\write18{
+    expr `texcount -1 -sum -merge #1.tex` + `texcount -1 -sum -merge -char #1.tex` - 1 
+    > chars.txt
+}\input{chars.txt}}
+
+\usepackage{enumitem}
 \usepackage{glossaries}
+\input{pages/end/glossary}
 \makeglossaries
-\input{pages/glossary}
 
 % ---------------------------------------------- %
 \pretitle{}
@@ -23,7 +35,7 @@
 \title{
     \begin{center}
         \bfseries\LARGE
-        Thesis Title
+        Security testing of web applications with dynamic symbolic execution in expoSE
     \end{center}
 }
 \preauthor{}
@@ -31,7 +43,7 @@
 \author{
     \begin{center}
         \large
-        Author's name
+        Moritz Böhm
     \end{center}
 }
 \predate{}
@@ -65,9 +77,9 @@
 \begin{center}
     \begin{large}
         \begin{Large}
-            Thesis type (Bachelor's Thesis / Master's Thesis, \ldots)\\
+            Master's Thesis \\
         \end{Large}
-        in course type (Computer Science, Computer Science plus Mathematics, \ldots)\\
+        in course type Computer Science\\
     \end{large}
 \end{center}
 
@@ -94,11 +106,11 @@
 
 \vspace{1,5cm}
 
-\input{pages/disclaimer}
+\input{pages/frontmatter/disclaimer}
 
-\input{pages/acknowledgements}
+\input{pages/frontmatter/acknowledgements}
 
-\input{pages/abstract}
+\input{pages/frontmatter/abstract}
 
 \newpage
 \tableofcontents
@@ -114,72 +126,49 @@
 \chapter{Introduction}
 \label{chapter:introduction}
 
-\input{pages/introduction}
+\input{pages/introduction/introduction}
 
 % ---------------------------------------------- %
 \chapter{Background}
 \label{chapter:background}
 
-\input{pages/background}
+\input{pages/introduction/background}
 
 % ---------------------------------------------- %
-\chapter{Overview}
-\label{chapter:overview}
+\chapter{Implementation}
+\label{chapter:implementation}
 
-\input{pages/overview}
-
-% ---------------------------------------------- %
-\chapter{Main Contents}
-\label{chapter:content1}
-
-\lipsum[2-8]
-
-\begin{figure}[t]
-    \begin{lstlisting}[language=Python, gobble=4]
-    def foo():
-        return 42   # the answer to everything
-
-    def bar():
-        return f'The answer is: {foo()}'
-    \end{lstlisting}
-    \caption{A simple example of a program. Figure captions go below.}
-    \label{fig:example-program}
-\end{figure}
-
-\autoref{fig:example-program} shows a simple example of a program.
-It is easy to see that the program is correct, as it returns the correct result.
-We can also use the glossary here, \gls{plai}.
+\input{pages/methodology/implementation}
 
 % ---------------------------------------------- %
-\chapter{More Main Contents}
-\label{chapter:content2}
+\chapter{Express Model}
+\label{chapter:express}
 
-\lipsum[2-3]
-
-
-% ---------------------------------------------- %
-\chapter{Remaining Main Contents}
-\label{chapter:content3}
-
-\lipsum[2-3]
+\input{pages/methodology/express}
 
 % ---------------------------------------------- %
+\chapter{Application}
+\label{chapter:application}
+
+\input{pages/methodology/application}
+% ---------------------------------------------- %
+
 \chapter{Evaluation}
 \label{chapter:evaluation}
 
-\input{pages/evaluation}
+\input{pages/eval/evaluation}
 
 % ---------------------------------------------- %
 \chapter{Related Work}
 \label{chapter:related-work}
 
-\input{pages/related}
+\input{pages/eval/related}
 
 % ---------------------------------------------- %
 \chapter{Conclusion}
 \label{chapter:conclusion}
 
-\input{pages/conclusion}
+\input{pages/eval/conclusion}
 
 % ---------------------------------------------- %
 \bibliographystyle{plainnat}
@@ -189,9 +178,12 @@ We can also use the glossary here, \gls{plai}.
 \chapter*{Appendix}
 \label{chapter:appendix}
 
-\input{pages/appendix}
+\input{pages/end/appendix}
 
 % ---------------------------------------------- %
+
+This text contains \charactercount{main} characters.
+
 \microtypesetup{protrusion=false}
 \listoffigures{}
 \listoftables{}

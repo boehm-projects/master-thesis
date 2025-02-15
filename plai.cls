@@ -94,7 +94,8 @@
 \RequirePackage{amsmath}
 \RequirePackage[numbers]{natbib}
 
-\usepackage{listings}
+\RequirePackage{listings}
+
 
 % General listings style
 \lstset{
@@ -133,6 +134,23 @@
 \date{\relax}
 \predate{}
 \postdate{}
+
+\lstdefinelanguage{JavaScript}{
+  morekeywords=[1]{break, continue, delete, else, for, function, if, in,
+    new, return, this, typeof, var, void, while, with, let, const},
+  % Literals, primitive types, and reference types.
+  morekeywords=[2]{false, null, true, boolean, number, undefined,
+    Array, Boolean, Date, Math, Number, String, Object},
+  % Built-ins.
+  morekeywords=[3]{eval, parseInt, parseFloat, escape, unescape},
+  sensitive,
+  morecomment=[s]{/*}{*/},
+  morecomment=[l]//,
+  morecomment=[s]{/**}{*/}, % JavaDoc style comments
+  morestring=[b]',
+  morestring=[b]"
+}[keywords, comments, strings]
+
 
 
 \RequirePackage{etoolbox}
