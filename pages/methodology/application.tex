@@ -2,9 +2,12 @@ This chapter introduces the web application test, which demonstrates the possibi
 
 
 
-This chapter is about detecting security issues in an web application using expoSE. It first describes the general idea, then shows examples of security vulnerabilities, mostly XSS vulnerabilities. 
+This chapter is about detecting security issues in a web application using expoSE. It first describes the general idea, then shows examples of security vulnerabilities, mostly XSS vulnerabilities. 
 
 \section{XSS}
+
+Cross-site scripting, also known as XSS, is the practice of executing malicious code on a remote server or another client by exploiting vulnerabilities in the server-side input validation. 
+
 
 \begin{tikzpicture}[node distance=2cm]
 
@@ -19,40 +22,48 @@ This chapter is about detecting security issues in an web application using expo
 
 \tikzstyle{arrow} = [thick,->,>=stealth]
 
-
+a
 % Nodes
 
-\node (start) [startstop] {Start};
+\node (start) [startstop] {Malicious Attacker Client};
 
-\node (pro1) [process, below of=start] {Process 1};
+\node (pro1) [process, below of=start] {\textless script\textgreater alert("Hello")\textless/script\textgreater};
 
-\node (dec1) [decision, below of=pro1, yshift=-1cm] {Decision 1};
+\node (dec1) [decision, below of=pro1, yshift=-1cm] {Server};
 
-\node (pro2a) [process, below of=dec1, xshift=-3cm] {Process 2A};
+\node (pro2a) [startstop, below of=dec1, xshift=-3cm] {Unassuming Client};
 
-\node (pro2b) [process, below of=dec1, xshift=3cm] {Process 2B};
+\node (pro2b) [startstop, below of=dec1, xshift=3cm] {Unassuming Client};
 
-\node (stop) [startstop, below of=pro2a] {Stop};
+\node (stopA) [process, below of=pro2a] {Hello};
+\node (stopB) [process, below of=pro2b] {Hello};
 
 
 % Arrows
 
-\draw  (start) -- (pro1);
+\draw  [arrow](start) -- node[anchor=east] {post message} (pro1);
 
-\draw  (pro1) -- (dec1);
+\draw  [arrow](pro1) -- node[anchor=east] {store message}(dec1);
 
-\draw  (dec1) -- node[anchor=east] {Yes} (pro2a);
+\draw  [arrow](dec1) -- node[anchor=east] {distribute message} (pro2a);
 
-\draw  (dec1) -- node[anchor=west] {No} (pro2b);
+\draw [arrow] (dec1) -- node[anchor=west] {distribute message} (pro2b);
 
-\draw [arrow] (pro2a) -- (stop);
+\draw [arrow] (pro2a) -- node[anchor=west] {execute code}(stopA);
+\draw [arrow] (pro2b) -- node[anchor=west] {execute code}(stopB);
+
 
 
 \end{tikzpicture}
 
 
 \section{Initial Test Plain JS Application}
+
+At the beginning of this endeavour, we built a small server in plain JavaScript Application, in order to see, whether it is even possible, to generate correct requests.
+
 \subsection{Idea}
+
+The idea was to create an actual plain JavaScript server, using the http package, and then strip it of everything, that relies on http, basically bypassing the actual server - client connection. 
 \subsection{Test evaluation}
 \section{Express Application}
 \subsection{Server}

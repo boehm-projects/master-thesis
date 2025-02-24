@@ -1,20 +1,63 @@
-This chapter provides an overview of the necessary modifications to the existing project in order to execute expoSE on the execution platform. In this case, an Apple MacBook Pro M1 Pro. 
+This chapter provides an overview of the project in \autoref{sec:overview}, outlines the necessary modifications to the existing project to execute expoSE on the execution platform in\autoref{sec:fwd-z3}, and presents the discovered system-imposed limitations in \autoref{sec:limits}. Some of them were contingent upon the platform on which the program was executed. In this case, an Apple MacBook Pro M1 Pro. 
 
 \section{Overview}
+\label{sec:overview}
+
+Here we will provide an overview of the implementation of the program, with its architecture diagram, specifically with how the express model sits in the processing chain.
+
+\centerline{\textbf{\huge{TODO}}}
 % Architecture Diagram
 % Specific to express
+
+
+
+\section{Forwarding Changes of Z3}
+\label{sec:fwd-z3}
+This section provides an short overview of the changes made to two of the four main parts that make up ExpoSE. Both were relatively simple in nature, but they were required to fix one error that kept occurring.
+
+\subsection{Changes to z3}
+\label{sec:changes-z3}
+As the forked repository of z3 made for expoSE was almost 5 years old, and we occasionally noticed a null pointer exception in the c++ code, we decided to pull the changes from the original repository into the fork, almost 5000 commits, in the hopes of that the null pointer exception has been fixed meanwhile. 
+The forwarding went smoothly, with two exceptions. Z3 provided now the type "Char Pointer", which had to be added to the JavaScript portion (and the Python part, as JavaScript basically copies the bindings from Python) of the binding creation.
+
+The second exception was, that the z3 API now provided a few more callbacks, which, however, required parameters that were not implemented for JavaScript. These we simply decided to delete for our fork, as they were not used in expoSE, and only caused the binding generation to fail.
+
+\subsection{Changes to z3JavaScript}
+\label{sec:changes-z3js}
+With the update to z3 itself, we also had to update the z3JavaScript project, as this defined the types for the JavaScript bindings. It turned out to be a simple issue of adding two new object types (a ParserContextObj and a SimplifierObj) of the type voidp, which is a pointer to the type void.
+
+
 \section{System-imposed limitations}
 \label{sec:limits}
-
+In this section, we will explain the limitations imposed on the application, what it means and how we can circumvent  some of them, while others are a hard  limit.
 \subsection{JavaScript Version}
 \label{sec:jsversion}
+We will start off with the hardest limitation of the application, and that is the fact, that we have to stay in syntax constructs offered by the JavaScript version known as ES6 (or ECMA 2015).
+
+This is a significant limitation, as it implies that we are unable to utilize an essential feature of contemporary JavaScript, specifically \textit{async} and \textit{await}. These two keywords refer to the asynchronous pattern that modern JavaScript employs. Without these, we will not be able to build an asynchronous application, which is a major limitation for a server that might have to wait for resources to load or for a computation-intensive process.
+
 
 \subsection{HTTP Protocol}
 \label{sec:httpprot}
+Another limit imposed on us was the communication between client and server, as typically, this would happen using HTTP. However, this would mean that we would lose the symbolic state of the program, as the transfer would occur as a byte stream with all data first transformed into a string representation. 
+A string, however, cannot be of symbolic type. \\
+This means, we had two options:\\
+Option A would require us to model the complete HTTP object, with all its bells and whistles, and then include the symbolic state of the program, all while complying with the HTTP standard. This way, we could also test HTTP, and whether the JavaScript implementation works as intended.
 
+Option B is to bypass the transmission of data entirely, by injecting the server into the client, or vice versa, depending on the server structure (more on that later). This would mean that we would have the full symbolic state of the execution, the data would not need to be transformed, and could simply be handed over to the request and response processing on server- and client-side.
+
+
+We deemed the modelling of the HTTP object out of scope. Therefore, we worked under the assumption, that HTTP works as intended and went for option B, as that meant, we could focus on the actual web application, and could test it in isolation.
 \subsection{External Packages}
 \label{sec:externalpack}
+The last limit we found, was that while it was possible to import and use external packages, the DSE engine expose would assume, that any imported package was part of the code (which is technically true), meaning it would be instrumented and create execution branches. This led to an massive explosion in branches, and while it could be used to find bugs and errors in these external packages, it did not offer any use for finding issues in the part of the web application we wanted to test. 
+Hence, we opted out of using any external package for now.
 
-\section{Forwarding Changes of Z3}
-\subsection{changes to z3}
-\subsection{changes to z3javascript}
+\subsection{Dependency Issues}
+\label{sec:dep-issues}
+While this was not a limit per se, it proved to be an issue with executing the tool chain of expoSE in the first place. When the codebase was created in 2017, almost all personal use computers were made on an x86 platform. While ARM was already widespread in mobile devices, there were only few personal computers running on an ARM instruction set\footnote{According to the investor report \href{https://www.arm.com/-/media/global/company/investors/Arm\%20Strategic\%20Review\%20-\%202017.pdf?revision=8473a535-6f7e-4ce5-85fe-0eb6f1f75487&la=en}{investor report} in 2017}. Therefore, little to no effort was spent on supporting it. 
+With the release of the M1 processor by Apple, this was no longer the case.
+This meant that the ARM instruction set went from being rarely supported to a widely spread one.
+When we started working on this thesis, we noticed the lack of support. The project required Node version 14, and the package ffi-napi\footnote{https://www.npmjs.com/package/ffi-napi}, that provided the ability to create C bindings, which were used in z3,  required Node 16 or higher.
+Upgrading the node version initially, would in turn create an error in ffi-napi for the ARM-based M processors\footnote{As reported in issue https://github.com/node-ffi-napi/node-ffi-napi/issues/248}. \\
+While working on this project, the issue got resolved.

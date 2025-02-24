@@ -1,17 +1,28 @@
-This chapter introduces a model implementation of the javascript server framework Express.js to to allow for testing using expoSE. 
+\label{ch:}
+This chapter introduces a model implementation of the JavaScript server framework Express.js that allows testing a web application, built using express, with expoSE. This shall demonstrate that it is possible to create a model for a framework to test a web application, without having to test the framework. Naturally, it is imperative that the model accurately reflects  the inner workings of the framework, including routing and request processing. But providing an abstraction layer for the framework, there is no need to create a symbolic representation for an HTTP request, which, to put it mildly, would surpass any reasonable amount of computing power.
+The developed model provides the ability to test an express web application fully and thorough, with two caveats, discussed in \autoref{sec:peculiarities}.
 
 \section{General Structure}
 
-This section provides an explanation of the general structure of the model and the internal logic of the routing, request handling, with a particular focus on the parametrized routing logic. 
+This section provides an explanation of the general structure of the model and the internal logic of the routing, request handling, with a particular focus on the parametrized routing logic. An overview of the general structure can be seen in 
+
+
+
+
 
 \subsection{Routing} 
+Being the most crucial component of any server, routing must be designed accordingly to enable all the features ExpressJS provides, while removing all the ones intended for handling a genuine HTTP request. This means that the model mimics how Express builds its internal routing stack, handles any incoming request, and manipulates the response. \\
+There are two methods to add a route to the server:\\ 
+The first method is to add it directly to the server via one of the 5 HTTP methods (listed in \autoref{tab:rest_http_methods}), which places the URL pattern, the callback function and its HTTP Method onto the stack. 
 
-Being the most crucial component of any server, routing must be designed accordingly to enable all the features ExpressJS provides, while removing all the ones intended for handling a genuine HTTP request. This means that the model mimics how Express builds its internal routing stack, handles any incoming request, and manipulates the response.  
-
+The second method is to create a separate router object, which also offers the available HTTP methods. The idea for this is, that it is possible to extract the routing logic from the core server. This adds the possibility of restricting access to, adding and removing whole sections from the server, without the need to interact with the base server.
 
 \subsection{Request Handling}
+\label{sec:req-handling}
+
+
 \subsection{Parametrized Routing}
-It is noteworthy that the extraction of parameters sent as route variables must remain symbolic, for instance, when the route is defined as seen in \autoref{fig:param-route}, the request path might look like \lstinline[language=JavaScript, gobble=4]{var path = S.symbol("path", "/user/1");//}. This id then gets extracted from the path, resulting in an Object containing the key (the path variable name) and values (the request path value) seen in \autoref{fig:param-extracted}
+It is noteworthy that the extraction of parameters sent as route variables must remain symbolic, for instance, when the route is defined as seen in \autoref{fig:param-route}, the request path might look like \lstinline[language=JavaScript, gobble=4]{var path = S$.symbol("path", "/user/1");//}. This id then gets extracted from the path, resulting in an Object containing the key (the path variable name) and values (the request path value) seen in \autoref{fig:param-extracted}
 
 \begin{figure}[ht]
     \begin{lstlisting}[language=JavaScript, gobble=4]
@@ -26,7 +37,7 @@ It is noteworthy that the extraction of parameters sent as route variables must 
 
 \begin{figure}[ht]
     \begin{lstlisting}[language=JavaScript, gobble=4]
-    const params =  {
+     req.params =  {
         keys: [ 'id' ],
         values: [
         ConcolicValue {
@@ -45,10 +56,14 @@ It is noteworthy that the extraction of parameters sent as route variables must 
 
 
 \section{Peculiarities}
+\label{sec:peculiarities}
 Specific features of the implementation due to the peculiarities of dynamic symbolic execution
 %\subsection{Implicit vs Explicit conditionals}
 %\subsubsection{re.match}
 
 \section{Usage}
+Now we want to adress how to actually use the model, what changes are required for a server to use it and how to generate a testable server.
 \subsection{Necessary Modifications}
-\subsection{Testing}\'?
+First and foremost, it requires slight modification to the imports and how express is called, since the model is located in expoSE right now. This means, the import requires the relative path. 
+The usage is also slightly different, as the express model instance needs to be initiated after importing, while express itself is initiated when it is imported.
+\subsection{Testing}

@@ -1,8 +1,8 @@
 In order to address the research inquiries posed in~\autoref{sec:research-questions}, it is imperative to first comprehend the subjects and their fundamentals. 
 
-We start by defining the topic areas touched upon by this thesis~(\autoref{sec:defs}), then explain the technologies used within the tool ExpoSE ~(\autoref{sec:defs}), and finally explain the limitations imposed by the engine itself~(\autoref{sec:limits}). 
+We start by defining  and giving an overview of the topic areas touched upon by this thesis~(\autoref{sec:defs}) and their theory, then explain the technologies used within the tool ExpoSE ~(\autoref{sec:defs}), and finally explain the limitations imposed by the engine itself~(\autoref{sec:limits}). 
 
-\section{Definitions}
+\section{Terminology and Theory}
 \label{sec:defs}
 To provide an overview of all the topics that will be addressed, we will begin by defining the key components of this thesis and explaining the basics to build upon in the later chapters. 
 \subsection{Web Applications}
@@ -14,7 +14,7 @@ Typically, the resources and scripts of web applications — such as images, tex
 The~\autoref{fig:simplified-web-app} illustrates the basic communication process between the client (the user's device), the server (where the application runs), and external services (such as another server).
 
 
-Most web applications also use a database, which is a structured way of storing data, to keep information consistently available and reliable. For the purposes of this discussion, we assume that the web application has a monolithic architecture. This means that it operates as a single cohesive program on a physical computer, as opposed to being divided into separate parts that run on different cloud services (like AWS, or Amazon Web Services, which offers online computing power without needing dedicated hardware)~\cite{noauthor_serverless_nodate}.
+Most web applications also use a database, which is a structured way of storing data, to keep information consistently available and reliable. For the purposes of this discussion, we assume that the web application has a monolithic architecture. This means that it operates as a single cohesive program on a physical computer, as opposed to being divided into separate parts that run on different cloud services (like AWS, or Amazon Web Services, which offers online computing power without needing dedicated hardware~\footnote{https://aws.amazon.com/})
 Additionally, we assume the server follows REST (Representational State Transfer) principles, which are guidelines for how web services should operate to enable smooth communication as described by \citet{roy_t_fielding_rest_2008}. 
 The web server processes requests that adhere to the HTTP (Hypertext Transfer Protocol) standard, which is the foundational protocol used for transmitting data on the web (ref. ~\autoref{tab:rest_http_methods}).
 This adherence ensures that the server and client can operate independently, meaning they can be developed and updated separately without affecting each other\cite{fielding_http_2022}.
@@ -43,6 +43,7 @@ This adherence ensures that the server and client can operate independently, mea
     \node (external) [external, right of=server, yshift=1cm] {External Services};
     % Arrows (connections)
     \draw  [doubleArrow](user) -- (browser);
+    \draw  [doubleArrow](browser) -- (server);
     \draw  [doubleArrow](server) -- (database);
     \draw [doubleArrow] (server) -- (external);
     \end{tikzpicture}
@@ -60,7 +61,7 @@ This adherence ensures that the server and client can operate independently, mea
         POST                  & Create a new resource                   & No                  \\
         PUT                   & Update or create a resource             & Yes                 \\
         PATCH                 & Partially update a resource             & Yes (mostly)        \\
-        HEAD                  & Retrieve headers of a ressource         & Yes                 \\
+        HEAD                  & Retrieve headers of a resource         & Yes                 \\
         OPTIONS               & Return available HTTP methods           & Yes                 \\
         DELETE                & Remove a resource                       & Yes                 \\ \bottomrule
     \end{tabular}
@@ -71,23 +72,24 @@ This adherence ensures that the server and client can operate independently, mea
 \subsection{Testing}
 \label{sec:testing}
 
-The next part we want to focus on is testing a web application. First we define what "testing" means, then look into the methodology of "fuzzing" as a technique used to test. We limit this to the following two testing paradigms: White Box Fuzzing (\autoref{sec:white-box}) and Black Box Fuzzing (\autoref{sec:black-box}).
+The next aspect we would like to concentrate on is the testing of a web application. First we define what "testing" means, then look into the methodology of "fuzzing" as a technique used to test. We limit this to the following two testing paradigms:
+Black Box Fuzzing (\autoref{sec:black-box})and White Box Fuzzing (\autoref{sec:white-box}) .
 
 \subsubsection{Testing}
-At its essence, \textit{Testing} constitutes the systematic process of validating and verifying the functionality of a program. A sensible analogy for the concepts of validation and verification was articulated by B. W. Boehm \citet{b_w_boehm_verifying_1984}. 
+At its essence, \textit{Testing} constitutes the systematic process of validating and verifying the functionality of a program. A sensible analogy for the concepts of validation and verification was articulated by \citet{b_w_boehm_verifying_1984}. 
 
 \begin{itemize}[label={}]
     \item \textit{Verification}: "Am I building the product right?" 
     \item \textit{Validation}: "Am I building the right product?"
 \end{itemize}
-Depending on the nature of the testing methodology employed, different levels of assessment can be achieved. A unit test, which is designed to evaluate a single component or function—hence the term "unit"—primarily provides insights into the correctness of that individual function. In contrast, an end-to-end test, while potentially less precise in verifying the functionality of individual components, serves to validate the overall functionality of the entire system. 
+Depending on the nature of the testing methodology employed, different levels ofa assessment can be achieved. A unit test, which is designed to evaluate a single component or function—hence the term "unit"—primarily provides insights into the correctness of that individual function. In contrast, an end-to-end test, while potentially less precise in verifying the functionality of individual components, serves to validate the overall functionality of the entire system. 
 
 Given that a program can accommodate a vast array of potential inputs, it may be impractical to manually identify all possible variations. Therefore, we can utilize a technique known as "fuzzing."
 
 \subsubsection{Fuzzing}
 \label{sec:fuzzing}
 \textit{Fuzzing} is an automated process that involves the generation of input data to identify potential program errors, commonly referred to as "bugs," which may arise from unhandled edge cases. These edge cases can include scenarios such as incompatible data types, excessively large entities, or the presence of unexpected characters.
-Fuzzing can be done in different ways and in the following we will describe the two most commonly used types: "white-box fuzzing" and "black-box fuzzing".
+Fuzzing can be done in different ways, and in the following we will describe the two most commonly used types: "white-box fuzzing" and "black-box fuzzing".
 
 
 \vspace{0.5cm}
@@ -174,11 +176,11 @@ In conclusion, black-box fuzzing is an essential technique within the realm of s
 
 \subsubsection{White Box Fuzzing}
 \label{sec:white-box}
-\textit{White box fuzzing} (ref. \autoref{fig:white-box-testing}) is an advanced software testing technique that seeks to identify vulnerabilities and bugs within applications by utilizing an in-depth understanding of their internal structures and logic. Unlike traditional black-box testing methods, where testers approach the software without any knowledge of its internal workings, white-box fuzzing leverages access to the source code, algorithms, and data flows, allowing for a more targeted and effective analysis.
+\textit{White box fuzzing} (ref. \autoref{fig:white-box-testing}) is a software testing technique that seeks to identify vulnerabilities and bugs within applications by utilizing an in-depth understanding of their internal structures and logic. Unlike traditional black-box testing methods, where testers approach the software without any knowledge of its internal workings, white-box fuzzing leverages access to the source code, algorithms, and data flows, allowing for a more targeted and effective analysis.
 
-One of the primary benefits of white-box fuzzing is its ability to generate test inputs based on the actual paths and branches present in the code. By analyzing the control flow and data structures inherent to the application, white-box fuzzers can create specific input cases that exercise various execution paths. This targeted approach increases the likelihood of uncovering potential weaknesses, particularly in areas of the code that may be prone to errors or security vulnerabilities.
+One of the primary benefits of white-box fuzzing is its ability to generate test inputs based on the actual paths and branches present in the code. By analysing the control flow and data structures inherent to the application, a white-box fuzzer can create specific input cases that exercise various execution paths. This targeted approach increases the likelihood of uncovering potential weaknesses, particularly in areas of the code that may be prone to errors or security vulnerabilities.
 
-Additionally, white-box fuzzing often incorporates dynamic analysis. During the fuzzing process, the application is executed in a controlled environment, and its behavior is monitored in real-time. This provides valuable feedback on how the program reacts to the generated inputs, enabling the identification of unhandled cases that may lead to crashes, incorrect outputs, or security flaws.
+Additionally, white-box fuzzing often incorporates dynamic analysis. More on that in ~\autoref{sec:dse}. During the fuzzing process, the application is executed in a controlled environment, and its behaviour monitored in real-time. This provides valuable feedback on how the program reacts to the generated inputs, enabling the identification of unhandled cases that may lead to crashes, incorrect outputs, or security flaws.
 
 Another critical feature of white-box fuzzing is coverage measurement. By measuring code coverage, testers can ensure that their input generation strategies are effective in exercising different paths within the software. This helps identify areas of the code that have not been adequately tested, enabling a more comprehensive examination of the program's reliability and security.
 
@@ -191,19 +193,31 @@ In summary, white-box fuzzing is a powerful and efficient technique for software
 
 \subsection{Dynamic Symbolic Execution}
 \label{sec:dse}
-\textit{Dynamic symbolic execution} (DSE) is a technique similar to white-box fuzzing, as it requires access to the source code. However, instead of requiring an actual input, it assumes that the variables are "symbolic," meaning that they do not possess a tangible value during execution of the program. Instead, it tracks the conditions encountered during runtime, generating constraints based on the symbolic variables. This facilitates a comprehensive examination of multiple program pathways, thereby aiding in the identification of anomalies that may result in unforeseen behaviour or security vulnerabilities.
+\textit{Dynamic symbolic execution} (DSE) is a technique derived from white-box fuzzing, as it requires access to the source code. However, instead of requiring an actual input, it assumes that the variables are "symbolic," meaning that they do not possess a tangible value during execution of the program. Instead, it tracks the conditions encountered during runtime, generating constraints based on the symbolic variables. 
+This facilitates a comprehensive examination of multiple program pathways, thereby aiding in the identification of anomalies that may result in unforeseen behaviour or security vulnerabilities.
 
 After exploring a particular execution path, DSE employs constraint solvers to analyse the constraints collected during execution. These solvers determine concrete inputs that can satisfy the path constraints, allowing the generation of specific test cases to trigger particular code paths during subsequent executions.
 
 By integrating DSE into white-box fuzzing, testers can automatically generate test cases that reliably expose bugs or vulnerabilities, such as buffer overflows or access violations. This allows for a more exhaustive testing process that can reveal flaws that traditional fuzzing techniques might overlook.
 
-The synergy between DSE and white-box fuzzing promotes automated test generation and increases the coverage of tested paths, ultimately improving the software's reliability and security. It provides developers with concrete inputs that reproduce identified vulnerabilities, facilitating easier debugging and remediation.
+The synergy between DSE and white-box fuzzing promotes automated test generation and increases the coverage of tested paths, ultimately improving the software's reliability and security. It provides developers with concrete inputs that reproduce identified vulnerabilities, facilitating debugging and remediation.
 
-In summary, dynamic symbolic execution significantly enhances the capabilities of white-box fuzzing by providing a structured, thorough, and automated approach to analyze program behavior. It helps identify and confirm vulnerabilities through the intelligent exploration of execution paths, making it a powerful tool in software testing and security analysis.
+In summary, dynamic symbolic execution significantly enhances the capabilities of white-box fuzzing by providing a structured, thorough, and automated approach to analyse program behaviour. It helps identify and confirm vulnerabilities through the intelligent exploration of execution paths, making it a powerful tool in software testing and security analysis.
 
-Let us proceed through the process of generating the path conditions (abbrv. PC) by employing the ensuing code snippet (\autoref{fig:code-snippet}). 
-\begin{figure}[ht]
-    \begin{lstlisting}[language=JavaScript, gobble=4, escapechar=@]
+
+\subsubsection{Example Dynamic Symbolic Execution}
+In this subsection, we will demonstrate the concept of DSE by employing the following code snippet (\autoref{fig:example-program}). 
+
+
+\vspace{0.5cm}
+
+\begin{tabular*}{\textwidth}{@{}c|c@{}}
+    
+\begin{minipage}{\dimexpr0.5\textwidth-2\tabcolsep}
+\centering
+    % Left Diagram - White Box Fuzzing
+
+\begin{lstlisting}[language=JavaScript, gobble=4, escapechar=@]
     function g(x) {
         if (x < 0){
             x=-x;
@@ -218,26 +232,168 @@ Let us proceed through the process of generating the path conditions (abbrv. PC)
             x =-1;
         }
     }
-    \end{lstlisting}
-    \caption{A simple program}
-    \label{fig:code-snippet}
+\end{lstlisting}
+   
+\end{minipage}
+&
+\begin{minipage}{\dimexpr0.5\textwidth-2\tabcolsep}
+\centering
+
+    % Left Diagram - White Box Fuzzing
+    \begin{tikzpicture}[node distance=1.5cm]
+
+        \tikzstyle{node} = [circle,  radius=0.5cm, text centered, draw=black, fill=blue!20]
+
+        \tikzstyle{arrow} = [thick, ->, >=stealth]
+
+        \node (foo) [] {};
+        \node (l0) [node, below of = foo, yshift=+0.5cm] {$l_0$};
+        \node (l1) [node, below of = l0, xshift=-1.5cm] {$l_1$};
+        \node (l2) [node, below of = l0, xshift=1.5cm] {$l_2$};
+        \node (l3) [node, below of = l2, xshift=-0.8cm] {$l_3$};
+        \node (l4) [node, below of = l2, yshift=-1.5cm ] {$l_4$};
+        \node (l5) [node, below of = l0, yshift=-4.5cm] {$l_5$};
+        \node (l6) [node, below of = l5, xshift=-1cm] {$l_6$};
+        \node (l7) [node, below of = l6, xshift=1cm] {$l_7$};
+        % Arrows
+        \draw[arrow] (foo)--(l0);
+        \draw  [arrow](l0) -- (l1) node[midway, left] {$x<0$};
+        \draw  [arrow](l0) -- (l2) node[midway, right] {$!(x<0)$};
+        \draw  [arrow](l1) -- (l5) node[midway, left] {$x=-x$};
+        \draw  [arrow](l2) -- (l3) node[midway, left] {$x==0$};
+        \draw  [arrow](l3) -- (l4) node[midway, left] {$x=1$};
+        \draw  [arrow](l2) -- (l4) node[midway, right] {$!(x==0)$};
+        \draw  [arrow](l4) -- (l5) node[midway, right] {$x=x+1$};
+        \draw  [arrow](l5) -- (l6) node[midway, left] {$!(x>0)$};
+        \draw  [arrow](l5) -- (l7) node[midway, right] {$x>0$};
+        \draw  [arrow](l6) -- (l7) node[midway, left] {$x=-1$};
+    \end{tikzpicture}
+    
+\end{minipage}
+
+\\
+
+\begin{minipage}[t]{\dimexpr0.5\textwidth-1\tabcolsep}
+ \captionof{figure}{A simple program}
+\label{fig:example-program}
+
+\end{minipage}
+&
+\begin{minipage}[t]{\dimexpr0.5\textwidth-1 \tabcolsep}
+\captionof{figure}{CFA of \autoref{fig:example-program}}
+\label{fig:example-program-graph}
+
+\end{minipage}
+
+\end{tabular*}
+To facilitate the process, we can first depict the program as a Control Flow Automata (CFA) \autoref{fig:example-program-graph}. This shows what conditions have to be met by the input and which transformations will be applied on execution.
+
+On entering  the program, we assume that the initial value of x=0, just to tell the DSE Engine the type of x, and to give a starting point. 
+
+\begin{center}
+    We can denote this as $(l_0, x \rightarrow X_0, true)$.
+    \begin{table}[h]
+        \begin{tabular}{lll}
+            where & $l_0$  & the state of the execution\\
+             & $x \rightarrow X_0$& the current value of x\\
+             & $true$& the path condition 
+        \end{tabular}
+    \end{table}
+
+\end{center} 
+
+In similar fashion, we can now walk through the execution, and create a branch whenever we encounter diverging paths. For example, right at the start, we have two possible routes the execution can take: $x < 0$ and $!(x < 0)$. We can now construct the following symbolic execution tree \autoref{fig:symbolic-execution-tree} by tracking the path conditions and transformations of the variables. It should be noted that any unreachable code will not be displayed in the execution tree, as the execution necessitates knowledge that cannot be obtained, as the codes are unreachable. In the example, we can see this happening in $l_6$. The condition $\neg(x > 0)$ cannot be satisfied because any negative input is turned positive earlier in the execution.
+
+\begin{figure}
+   
+
+\begin{tikzpicture}[node distance=1.5cm,thick, scale=1, every node/.style={scale=0.7}]
+
+        \tikzstyle{node} = [rectangle, text centered, draw=black]
+
+        \tikzstyle{arrow} = [thick, ->, >=stealth]
+
+        \node (foo) [] {};
+        \node (l0) [node, below of = foo] {$(l_0, x \rightarrow X_0, true)$};
+        % left branch
+        \node (l1) [node, below of = l0, yshift=-0.5cm, xshift = -6cm] {$(l_1, x \rightarrow X_0, X_0 < 0)$};
+        \node (l2) [node, below of = l1] {$(l_5, x \rightarrow -X_0, X_0 < 0)$};
+        \node (l3) [node, below of = l2] {$(l_7, x \rightarrow -X_0, X_0 < 0 \wedge -X_0 > 0)$};
+
+        % right branch 
+        \node (l4) [node, below of = l0, yshift=-0.5cm, xshift = 5cm] {$(l_2, x \rightarrow X_0, \neg (X_0 < 0))$};
+        % right left
+
+        \node (l5) [node, below of = l4,xshift = -5cm] {$(l_3, x \rightarrow X_0, \neg (X_0 < 0) \wedge X_0 == 0)$};
+        \node (l6) [node, below of = l5] {$(l_4, x \rightarrow 1, \neg (X_0 < 0) \wedge X_0 == 0)$};
+        \node (l7) [node, below of = l6] {$(l_5, x \rightarrow 2, \neg (X_0 < 0) \wedge X_0 == 0)$};
+        \node (l8) [node, below of = l7] {$(l_7, x \rightarrow 2, \neg (X_0 < 0) \wedge X_0 == 0 \wedge 2 > 0)$};
+
+        %right right 
+        \node (l9) [node, below of = l4, xshift = 3cm] {$(l_4, x \rightarrow X_0, \neg (X_0 < 0) \wedge !(X_0 == 0))$};
+        \node (l10) [node, below of = l9] {$(l_5, x \rightarrow X_5, \neg (X_0 < 0) \wedge !(X_0 == 0))$};
+        \node (l11) [node, below of = l10] {$(l_7, x \rightarrow X_7, \neg (X_0 < 0) \wedge !(X_0 == 0) \wedge X_0+1 > 0)$};
+        % Arrows
+        \draw[arrow] (foo)--(l0);
+        \draw  [arrow](l0) -- (l1) node[midway, left] {$x<0$};
+        \draw  [arrow](l1) -- (l2) node[midway, left] {$x=-x$};
+        \draw  [arrow](l2) -- (l3) node[midway, left] {$x>0$};
+        \draw  [arrow](l0) -- (l4) node[midway, right] {$!(x<0)$};
+        \draw  [arrow](l4) -- (l5) node[midway, left] {$x==0$};
+        \draw  [arrow](l5) -- (l6) node[midway, left] {$x=1$};
+        \draw  [arrow](l6) -- (l7) node[midway, left] {$x=x+1$};
+        \draw  [arrow](l7) -- (l8) node[midway, left] {$x>0$};
+
+        \draw  [arrow](l4) -- (l9) node[midway, right] {$!(x==0)$};
+        %\draw  [arrow](l5) -- (l6) node[midway, left] {$!(x>0)$};
+        \draw  [arrow](l9) -- (l10) node[midway, right] {$x=x+1$};
+        \draw  [arrow](l10) -- (l11) node[midway, right] {$x>0$};
+        %\draw  [arrow](l6) -- (l7) node[midway, left] {$x=-1$};
+
+    \end{tikzpicture}
+    \caption{Symbolic execution tree of \autoref{fig:example-program}}
+    \label{fig:symbolic-execution-tree}
 \end{figure}
+
+\newpage
+After constructing the execution tree, it is possible to generate distinct inputs for each of the leaf nodes. For instance, if we want to determine which input would cover the branch in the middle of the tree, we simply need to solve the constraints represented as  $(l_7, x \rightarrow 2, \neg(X_0 < 0) \land X_0 == 0 \land 2 > 0)$. Solving these constraints yields the answer of (0), which indicates that this input will satisfy the specified conditions for that branch.
+These constraints are usually solved by an SMT Solver, which we will briefly explain in \autoref{sec:smtsolver}.
+
+
+JavaScript has a few peculiarities, as it is dynamically typed 
+
+\subsubsection{Limitations DSE}
+
+As with any explorative system, DSE has limitations regarding its capabilities. 
+The most significant limitation is computable paths, which have the potential to explode if the analysed program is not designed with DSE in mind, for instance, if it heavily relies on recursive calls.
+This also occurs with symbolic addresses, as it has to account for any possible memory address a variable can occupy \cite{elkarablieh_precise_2009}.  
 
 
 \subsection{SMT Solver}
 \label{sec:smtsolver}
 
-A \textit{satisfiability modulo theories }(SMT) Solver, is used to solve mathematical and logical problems. 
+A \textit{satisfiability modulo theories }(SMT) Solver is a tool used in formal verification, automated reasoning, and various applications within computer science and engineering. The need for SMT solvers arises from the complexity of verifying whether certain logical formulas, particularly those involving rich theories such as integers, real numbers, arrays, and others, are satisfiable. Traditional propositional satisfiability (SAT) solvers face challenges with these complex theories, which is why the development of SMT solvers has become essential for enhancing automated reasoning capabilities.
+
+SMT solvers extend the capabilities of SAT solvers by incorporating various decision procedures tailored for different theories. This is achieved by incorporating various decision procedures tailored for different theories. The process begins with the translation of a given problem into a logical formula that can be expressed in a first-order language. Initially, the SMT problem is transformed into a conjunction of logical formulas, some of which may involve theoretical constructs. Each theory, such as those pertaining to integers, arrays, or bit-vectors, possesses its own decision procedure. SMT solvers combine these procedures to handle the entire formula, typically through a technique known as "dPLL(T)," where T represents the specific theory being addressed.
+
+
+When an SMT solver processes a logical formula, it checks for potential conflicts—instances in which segments of the formula cannot be simultaneously satisfied. If a conflict is detected, the solver uses conflict analysis to learn from this situation and backtrack efficiently to explore other possibilities. Throughout this process, the solver iteratively refines its search, evaluating potential assignments to variables while ensuring consistent adherence to the theoretical constraints at hand. This harmonious integration of modular theory solvers with SAT-like search techniques allows SMT solvers to effectively determine the satisfiability of complex logical formulas.\cite[p. 2]{barrett_satisfiability_2009}
+
+
+Notable SMT solvers like Z3 and CVC5 have significantly impacted the field. The Z3, which is utilized as an SMT Solver for expoSE and was developed by Microsoft Research, has gained widespread acceptance and provides robust support for numerous theories. CVC5, developed at Stanford University, emphasizes efficiency in its decision procedures. The rise of SMT solvers has been fuelled by advancements in automated reasoning over recent decades, establishing them as essential components in many formal verification tools, program analysis frameworks, and synthesis technologies.\cite{barrett_satisfiability_2009}
+
 
 \section{Tech Stack}
 \label{sec:tech}
-In this section, we will delve into the inner workings of the expoSE framework, what tools it uses and their function within.
+In this section, we will delve into the inner workings of the expoSE framework, what tools it uses and their function within. 
+
+
 
 
 \subsection{Jalangi}
 \label{sec:jalangi}
 
-Jalangi2 is used in order to instrument the javascript code that is to be analyzed. 
+Jalangi2 is used to instrument the JavaScript code that is to be analysed. 
 \begin{figure}[ht]
     \begin{lstlisting}[language=JavaScript, gobble=4]
     J$.iids = {"8":[9,7,9,14],"9":[2,10,2,17],"10":[6,6,6,11]...,"nBranches":6}
@@ -261,6 +417,8 @@ Jalangi2 is used in order to instrument the javascript code that is to be analyz
 
 
 ExpoSE uses the Z3 SMT Solver for solving the found path conditions of the analysed program. Developed by Microsoft, it has constant progress and improvements to its capabilities. 
+
+
 
 \subsection{Z3Javascript}
 \label{sec:z3js}
