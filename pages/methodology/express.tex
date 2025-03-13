@@ -1,28 +1,167 @@
-\label{ch:}
-This chapter introduces a model implementation of the JavaScript server framework Express.js that allows testing a web application, built using express, with expoSE. This shall demonstrate that it is possible to create a model for a framework to test a web application, without having to test the framework. Naturally, it is imperative that the model accurately reflects  the inner workings of the framework, including routing and request processing. But providing an abstraction layer for the framework, there is no need to create a symbolic representation for an HTTP request, which, to put it mildly, would surpass any reasonable amount of computing power.
-The developed model provides the ability to test an express web application fully and thorough, with two caveats, discussed in \autoref{sec:peculiarities}.
-
+This chapter presents a model implementation of the JavaScript server framework Express.js in \autoref{sec:overview} that enables testing a web application built with Express through ExpoSE. It highlights the possibility of developing a model for a framework to test a web application without needing to test the framework itself. For the model to be effective, it must accurately represent the framework's core functionalities, including routing, described in \autoref{sec:routing}, and request processing, described in \autoref{sec:req-handling}. By offering the model as an abstraction layer, there is no need to create a symbolic representation of an HTTP request. We also highlight the importance of parameterized routing in our model in \autoref{sec:param-route}.
 \section{General Structure}
 
-This section provides an explanation of the general structure of the model and the internal logic of the routing, request handling, with a particular focus on the parametrized routing logic. An overview of the general structure can be seen in 
+This section provides an explanation of the general structure of the model and the internal logic of the routing, request handling, with a particular focus on the parametrized routing logic. An overview of the general structure for ExpoSE can be seen in \autoref{sec:overview}.
+
+The model is split in two parts, as can be seen in \autoref{fig:express-struc}. On the left side, we have the request processor creation — a stack which contains all the routes and middleware for the server. For consistency purposes with Express.js, we will call it a stack, but for simplicity of the model, we designed it as a queue, which gets processed first in first out (right to left in the diagram), opposed to being reliant on calling the method “next” — in the model it returns straightaway. 
+This stack can take as many layers as required, and has no minimum of middleware layers and routes, leading to every request generating an error response. 
 
 
 
+On the right side, we have the request handling and the entry point for any request. 
+Express.js creates an HTTP server when the method listen is called, and offers the normal entry point of the express server. As the request is handled internally of express, we could not inject the server controller into a client, therefore requiring us to rethink the approach. This led us to switch from injecting the server code into the client, to injecting the client into the server. 
+
+With this approach, all we had to do was to slightly modify the “listen” method and pass the request directly to it as a parameter. Just like this, we had a functioning server that could receive a request. Although the listen method usually does not return anything, we required a way for the client to receive the response again, which is why the modelled “listen” method returns the response.
+To generate the request, the server was required to instantiate the client. Now that we had the issue of bypassing HTTP for express resolved, we can move on to the model itself and how it internally handles the request and routing.
+
+\begin{figure}[h]
+        % Left Diagram - White Box Fuzzing
+    \centering
+    \begin{adjustbox}{width=\textwidth}
+    \begin{tikzpicture}[stack/.style={rectangle split, rectangle split parts=#1,rectangle split horizontal,draw, anchor=center}]
+
+        \tikzstyle{block} = [draw, rectangle, text width=2cm, text centered, minimum height=1.2cm, node distance=3cm,fill=white]
+
+        \tikzstyle{target} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=red!20]
+        \tikzstyle{box} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=blue!20]
+        \tikzstyle{container} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=gray!20]
+        \tikzstyle{title} = [rectangle, rounded corners, minimum width=5cm, text centered, draw=none, fill=none, font=\large\bfseries]
+        \tikzstyle{arrow} = [thick, ->, >=stealth]
+        \tikzset{doubleArrow/.style={thick, <->, >=stealth,
+        line width=0.1mm, line cap=round, draw=black
+    }}
+
+        \node (listen) [box, yshift = 1cm] {listen};
+
+        \begin{scope}
+                \node (use) [box, left = of listen, xshift = -3cm ]{use};      
+        \node (middleware) [box, below = of use, xshift = 2cm] {middlware};
+        \node (router) [box, left = of middleware] {router};
+        
+        
+        \node (stack)[stack=5, below = of middleware, xshift = -2cm,fill=orange!20]  {
+            \nodepart{one} route
+            \nodepart{two} route
+            \nodepart{three} route
+            \nodepart{four} middleware
+            \nodepart{five} middleware
+            };
+        \node (handle) [box, below = of listen] {handleStack};
+        %
+          %\draw  [arrow](use) -- (listen) node[midway, above] {entry point};
+        \draw  [arrow](use) -- (middleware) node[midway, right] {use Middleware};
+        \draw  [arrow](use) -- (router) node[midway, left] {use Router};
+        \draw  [arrow](router) -- (stack) node[midway, left] {place on stack};
+        \draw  [arrow](middleware) -- (stack) node[midway, right] {place on stack};
+        \draw  [doubleArrow](handle) -- (stack.north east) node[midway, right] {generate response};
+        \draw  [doubleArrow](listen) -- (handle) node[midway, right] {process request};
+        
+        \draw[->, thick] (stack.south east)  -- ++ (0,-0.2) -- ++(-7.5, 0)   node[midway, below] {process request};
+
+        \draw[lmugreen,thick,dotted] ($(listen.north west)+(-1.2,0.9)$)  rectangle ($(stack.south east)+(6,-0.9)$)node[box]{request handling};
+        \draw[red,thick,dotted] ($(use.north west)+(-2.4,0.9)$)  rectangle ($(stack.south east)+(0.2,-0.9)$)node[box]{stack creation};        
+
+        \end{scope}
+    
+
+    \end{tikzpicture}
+    \end{adjustbox}
+    \caption{Express model structure}
+    \label{fig:express-struc}
+\end{figure}
 
 
 \subsection{Routing} 
-Being the most crucial component of any server, routing must be designed accordingly to enable all the features ExpressJS provides, while removing all the ones intended for handling a genuine HTTP request. This means that the model mimics how Express builds its internal routing stack, handles any incoming request, and manipulates the response. \\
+\label{sec:routing}
+Being the most vital component of any server, routing must be planned accordingly to enable all the features offered by Express.js, while removing those intended for handling a genuine HTTP request. This implies that the model must mimic how Express builds its internal routing stack, handles any incoming request, and manipulates the response.\\
 There are two methods to add a route to the server:\\ 
-The first method is to add it directly to the server via one of the 5 HTTP methods (listed in \autoref{tab:rest_http_methods}), which places the URL pattern, the callback function and its HTTP Method onto the stack. 
+The first method is to add it directly to the server via one of the 5 HTTP methods (listed in \autoref{tab:rest_http_methods}), which takes the provided URL pattern, the callback function and its HTTP Method and places it in the array.\\
+The second method is to create a separate router object, which also offers the available HTTP methods. The idea for this is, that it is possible to extract the routing logic from the core server. This provides the possibility to restrict access to, add, and remove entire sections from the server without the necessity to modify the base server.\\
 
-The second method is to create a separate router object, which also offers the available HTTP methods. The idea for this is, that it is possible to extract the routing logic from the core server. This adds the possibility of restricting access to, adding and removing whole sections from the server, without the need to interact with the base server.
+This router object then is attached in the server to a base route, most commonly in  simple server under the base route “/”, finalizing the route by which the resource can be reached. All routes are subsequently added into the array. The array creation is then handled by a “use” function (\autoref{fig:express-struc} top left), which takes as many parameters as needed, which results in the following 3 cases:
+\begin{itemize}
+    \item  the second argument is of type “Router” — this leads to adding all routes added to the router to be pushed onto the stack
+    \item  the first element is of type string - this leads to adding all callbacks to the path of the first element
+    \item  no string is provided - the callbacks are attached to the base path of "/"
+\end{itemize}
+If, for instance, when we add the following four elements to the array:    
+\begin{itemize}
+    \item \lstinline{app.use("preprocessRequest", callback(req,res,next))} - add a middleware layer, which will pre-process a request
+    \item \lstinline{app.get('/user/:id', callback(req, res, next))} - add a GET request without router
+    \item \lstinline{router.post('/createUser', callback(req, res, next))} - add a POST request via a router
+    \item \lstinline{app.use("modify response", callback(req, res, next))} - add a middleware layer, which will post-process a request
+\end{itemize}
+This yields the following array \autoref{fig:stack-example}:
+\begin{figure}[ht]
+	\begin{lstlisting}[language=JavaScript, gobble=4]
+    [
+        {
+            path: '/',
+            handle: [Function (anonymous)],
+            method: 'use',
+            route: null
+        },
+        {
+            route: {
+                path: '/user/:id',
+                methods: [GET],
+                parameters: [get: "id"],
+                GET: [Function (anonymous)]
+            },
+            path: /^\/user\/(\d{1,4})$/,
+            handle: [Function (anonymous)],
+            method: 'GET'
+        },
+        {
+            route: {
+                path: '/createUser',
+                methods: [POST],
+                parameters: {},
+                POST: [Function (anonymous)]
+            },
+            path: /^\/createUser/,
+            handle: [Function (anonymous)],
+            method: 'POST'
+        },
+        {
+            path: '/',
+            handle: [Function (anonymous)],
+            method: 'use',
+            route: null
+        }
+    ]
+	\end{lstlisting}
+	\caption{Routing stack created by the express model. }
+	\label{fig:stack-example}
+\end{figure}
+
+
+
+The array comprises not only of routes, but also all middleware that is associated with the server, responsible for pre- and post-processing any request. Common middleware would include, for instance, an authorizer middleware, which verifies whether the client has the authorization to request the resource, or a logger for writing events to an output with the purpose of tracing requests.
+Express.js requires that the middleware layers that preprocess the request and response be placed first, and any post-processing middleware be placed last, as the processing of the array is queue-like, first in first out. This is done by ordering the execution statements in the same order.
+
+Each layer object consists of four fiels: method, path, handle and route.\\
+The field \textit{method} has two distinct usecases. The first is signifying that it is a middleware layer, by containing the keyword "use", which will be executed no matter the request.
+The second usecase is to hold the information which HTTP method it expects. \\
+The field \textit{path} holds the URL pattern, which a request has to match in order for it to be processed. Should a request match the path, a flag is set that it has been matched and the model will no longer try to find a matching route. A middleware layer will always be attached to the basepath "/"\\
+The field \textit{handle} contains the callback function.\\
+The field \textit{route} contains all information regarding the routing layer, such as path parameters, the callback function and the HTTP methods. A middleware layer does not have such information, thus it is always null.
+
+
+
 
 \subsection{Request Handling}
 \label{sec:req-handling}
+The approach to request handling is designed to replicate the method employed by Express for handling requests. This is accomplished by iterating over the stack, utilizing all middleware layers to preprocess the request, and subsequently attempting to match the request URL with an existing route pattern within the stack. When a match is identified, the request is processed, and a response is generated by invoking the callback function stored in the handle field of the corresponding routing object.
+
+To ensure the correct functioning of this process, it is imperative that the base route, “/” is added last in the stack. This arrangement allows for the appropriate handling of all preceding routes. Additionally, a flag is established to indicate that the request has been processed, thereby preventing any possibility of matching a second route inadvertently. Finally, any post-processing middleware is applied prior to the transmission of the response to the client.
 
 
 \subsection{Parametrized Routing}
-It is noteworthy that the extraction of parameters sent as route variables must remain symbolic, for instance, when the route is defined as seen in \autoref{fig:param-route}, the request path might look like \lstinline[language=JavaScript, gobble=4]{var path = S$.symbol("path", "/user/1");//}. This id then gets extracted from the path, resulting in an Object containing the key (the path variable name) and values (the request path value) seen in \autoref{fig:param-extracted}
+\label{sec:param-route}
+
+It is noteworthy that the extraction of parameters sent as route variables must remain symbolic. For instance, when the route is defined as seen in \autoref{fig:param-route}, the request path might look like \lstinline[language=JavaScript, gobble=4]{var path = S$.symbol("path", "/user/1");}.
+
 
 \begin{figure}[ht]
     \begin{lstlisting}[language=JavaScript, gobble=4]
@@ -32,38 +171,22 @@ It is noteworthy that the extraction of parameters sent as route variables must 
     \label{fig:param-route}
 \end{figure}
 
-
-
-
 \begin{figure}[ht]
     \begin{lstlisting}[language=JavaScript, gobble=4]
-     req.params =  {
-        keys: [ 'id' ],
-        values: [
-        ConcolicValue {
-          concrete: '1',
-          symbolic: [Expr],
-          _arrayType: undefined
+    req.parameters =  {
+        id: ConcolicValue {
+            concrete: '1',
+            symbolic: Expr {context: [Context], ast: [Object], _fields: [], checks: []},
+        }
     }
-  ]
-}
     \end{lstlisting}
     \caption{Parameters extracted from the request path}
     \label{fig:param-extracted}
 \end{figure}
+As illustrated in \autoref{fig:stack-example}, the second layer from the top introduces a “parameters” field, which contains an object representing the parameter variable name, specifically “id”. During the processing of a request, this parameter is extracted from the path, resulting in an object that is subsequently attached to the request, as depicted in \autoref{fig:param-extracted}.
+The significant aspect of this process is that the parameter remains a concolic variable, thereby preserving its symbolic characteristics. Therefore, it becomes possible to generate additional path conditions as the request parameters interact with conditionals, facilitating the creation of corresponding inputs.
 
 
 
 
-\section{Peculiarities}
-\label{sec:peculiarities}
-Specific features of the implementation due to the peculiarities of dynamic symbolic execution
-%\subsection{Implicit vs Explicit conditionals}
-%\subsubsection{re.match}
 
-\section{Usage}
-Now we want to adress how to actually use the model, what changes are required for a server to use it and how to generate a testable server.
-\subsection{Necessary Modifications}
-First and foremost, it requires slight modification to the imports and how express is called, since the model is located in expoSE right now. This means, the import requires the relative path. 
-The usage is also slightly different, as the express model instance needs to be initiated after importing, while express itself is initiated when it is imported.
-\subsection{Testing}

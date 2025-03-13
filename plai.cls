@@ -63,7 +63,7 @@
 \fi
 
 % Set the page margins
-\RequirePackage[left=30mm,right=30mm,top=30mm,bottom=40mm]{geometry}
+\RequirePackage[inner=40mm,outer=30mm,top=30mm,bottom=40mm]{geometry}
 
 \RequirePackage{libertine}
 \RequirePackage{inconsolata}

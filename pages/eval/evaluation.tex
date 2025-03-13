@@ -1,11 +1,60 @@
-In this chapter we will describe our methodology and approach in regard to testing the underlying model (as explained in \autoref{chapter:express})and evaluating our results, finally answering the research questions posed in \autoref{sec:research-questions} 40 pages ago.
+In this chapter, we will describe our methodology and approach in regard to testing the underlying model (as explained in \autoref{chapter:express})and evaluating our results, finally answering the research questions posed in \autoref{sec:research-questions}. 
+The developed model provides the ability to test an express web application fully and thorough, with two points of caution, discussed in \autoref{sec:peculiarities}.
+
 \section{Methodology} 
+We had two goals for this endeavour: Answering whether ExpoSE can be used to reliably end-to-end fuzz test a web application, and whether it can be used to locate security issues.
+
+As testing a web application for security issues depends on ExpoSE being able to reliably end-to-end fuzz a web application, we set out to achieve this goal first. After all, should it not be possible to do so, locating security issues is merely dependent on luck, which is essentially useless for its purpose. 
+
+To evaluate whether we achieved the first goal with our express model, we use the existing test framework of ExpoSE. With the slight modification of instead of running the various test files, we used it to run our test server multiple times in parallel, trying to verify that ExpoSE generates inputs that consistently find all available routes and branches within.
+
+
+For the purpose of testing our model and the capabilities of ExpoSE regarding its applicability to web applications, we first developed one web application ourselves, we will call it project A, and to verify its compatibility with real-world projects, we took an existing GitHub project \footnote{https://github.com/rwieruch/node-express-server-rest-api}, that worked within the limits of ExpoSE stated in \autoref{sec:limits}. This means, it was written with the syntax available in ES6 and could easily be stripped of external packages. In this case, the only external package was the CORS package, used for cross-origin resource sharing. And it did not rely on any external database. Hence, it was the perfect example project for our needs. Besides removing the package, we modified the project for use with ExpoSE as presented in \autoref{sec:nec-mods}. This is our project B.
+We do not force ExpoSE to generate an input by giving assertions about the form and content of the data, to keep the discovery of paths to the framework. This is to ensure that the normal program flow happens, thus representing a normal execution. 
+
+Project A has a total of five routes, one for each CRUD operation, with one extra GET having a parameterized path.
+It uses one middleware layer for pre-processing a request, and one layer for post-processing the response. Behind each route exists a controller, a service, and a database mock-up, to simulate depth. 
+The client used for this application is bare-bones. All it does is generate a request and receive a response, comparing the input with the output. The client is also the only place which holds a reference to the symbolic execution interface S\$.
+
+Project B has a total of eight routes, with 4 of them using path parameters.
+It also uses one middleware layer for pre-processing a request, and one layer for post-processing the response. The routing, however, is split into three different routers, which tests our express models capabilities to work with them. In this project, the routes hold the executing functions directly. It has no database, but uses an object to store the data. 
 
 
 
 \section{Results}
-Foremost: Testing a web application using DSE already provides the benefit of finding unhandled errors, such as missing undefined checks, empty request bodies etc.
+\label{sec:results}
+Foremost: Testing a web application using DSE already provides the benefit of finding unhandled errors, such as missing undefined checks, empty request bodies etc. 
+This can already benefit the development of a program, catching issues earlier, and therefore avoiding publishing erroneous code.
+
+
+
+\begin{itemize}
+    \item Self developed program
+    \begin{itemize}
+        \item Execution
+        \item Results for RQ1
+        \item Results for RQ2
+    \end{itemize}
+    \item GitHub program
+    \begin{itemize}
+        \item Execution
+        \item Results for RQ1
+        \item Results for RQ2
+    \end{itemize}
+\end{itemize}
+
+\subsection{Peculiarities}
+\label{sec:peculiarities}
+Specific features of the implementation due to the peculiarities of dynamic symbolic execution.
+
+Recursion creates a heavy load on the system, making it unfeasible for any real-world application. 
+
+Another issue is the use of implicit conditionals, such as re.Match, which does check whether a string matches a regular expression, but is also fine with no match at all, as it returns an array. If re.Match is used, an explicit check has to follow; otherwise no path is created. 
+
 
 
 
 \section{Discussion}
+Now, coming back to the initial research questions. What's the verdict? 
+
+Testing a web application with ExpoSE, with Dynamic Symbolic Execution, gave a direct answer to both questions. As presented in \autoref{sec:results}, we managed to test multiple web applications successfully with our express model 

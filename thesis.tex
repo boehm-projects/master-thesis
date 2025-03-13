@@ -1,17 +1,25 @@
-\documentclass[thesis]{plai}
+\documentclass[thesisi,twoside]{plai}
 
 \usepackage{tabularx}
 
 \usepackage{lipsum}
 \usepackage{tikz}
-\usetikzlibrary{shapes.geometric, arrows, decorations}
+\usetikzlibrary{backgrounds,shapes.geometric,arrows,decorations,decorations.pathreplacing,fit,positioning,shapes.multipart,calc}
+\usepackage{adjustbox}
+
+
 \tikzstyle{class} = [rectangle, draw=black, fill=blue!20, text width=6em, align=center, rounded corners, minimum height=2em]
+\tikzstyle{block} = [draw, rectangle, text width=2cm, text centered, minimum height=1.2cm, node distance=3cm,fill=white]
 
 \tikzstyle{method} = [text width=6em, align=left]
 
+
+
 \usepackage{graphicx}
 \graphicspath{{images/}}
-
+\usepackage{svg}
+\usepackage{rotating}
+\usepackage{float}
 \usepackage{fancyhdr}
 \setlength{\headheight}{13.6pt}
 \addtolength{\topmargin}{-1.6pt}
@@ -26,6 +34,9 @@
     expr `texcount -1 -sum -merge #1.tex` + `texcount -1 -sum -merge -char #1.tex` - 1 
     > chars.txt
 }\input{chars.txt}}
+
+
+
 
 \usepackage{enumitem}
 \usepackage{glossaries}

@@ -1,25 +1,27 @@
+Testing of web applications for possible security breaches can be done in multiple ways. Most of them require extensive explicit writing of test cases, trying to catch all edge cases and hoping they would reveal all potential threats. 
 
-
-
-This is a citation without name ~\cite{cadar_klee_nodate}.
-As \citet{cha_unleashing_2012} point out, it also is a major challenge in the field of conformance testing.
-
-
-In particular, this thesis makes the following contributions:
-\begin{itemize}
-    \item We define the problem of abc as an instance of xyz~(\autoref{chapter:content1}).
-    \item We review the literature on xyz and show how corresponding solutions can be transferred to abc, following the example of def~(\autoref{chapter:content2}).
-    \item We demonstrate how to encode a specific example of abc to WizWoz, an implementation of def~(\autoref{chapter:content3}), and confirm that it effectively solves the problem~(\autoref{chapter:evaluation}).
-\end{itemize}
-
-
-Testing of web applications for possible security breaches can be done in multiple ways. Most of them require extensive explicit writing of test cases, trying to catch all edge cases and hoping they would catch all potential threats. 
-
-As the title of this thesis states, we used the dynamic symbolic execution (abbrev. DSE) engine ExpoSE, created and described in \citet{loring_expose_2017}
+As the title of this thesis states, we used the dynamic symbolic execution (DSE) framework ExpoSE, created for and described in \citet{loring_expose_2017}
 
 
 \section{Motivation}
 \label{sec:motivation}
+
+Whenever we write code, we at some point have to test it. In ideal circumstances, we test while development, as should we not, we might be in for an unpleasant surprise. Bill Gates once said:
+\begin{quote}
+
+    “… we have as many testers as we have developers. And testers spend all their time testing, and developers spend half their time testing. We're more of a testing, a quality software organization than we're a software organization.” — Bill Gates in an interview for InformationWeek \cite{bill_q_2002} 
+\end{quote}
+This shows, that testing is not just an often overlooked, annoying, side effect of developing software, it actually may even more important than writing the code itself.
+Automating this costly testing process, therefore, is a highly coveted question, which many approaches have tried to give an answer to. 
+Recently, the use of Dynamic Symbolic Execution has been adopted as an approach for automating and generating test coverage, to uncover software bugs and malicious openings, and a many frameworks for DSE testing have been developed, each with its limitations and solutions.
+ExpoSE is such a framework to test software.\\
+
+The severity of bugs and malicious openings depend on the kind of program and its execution circumstances: is it an offline program, just running without any outside connection, is it a program for Internet of Things (IoT), connecting hardware with the internet, like a smart thermostat, or is it a web application, holding private information, distributing data all over the world?
+All of these programs can include security issues, and to find these, programs are tested extensively. 
+
+In this thesis, we want to apply Dynamic Symbolic Execution by using ExpoSE as a framework, to test web applications. For this, we try to answer the following research questions.
+
+
 \section{Research questions}
 \label{sec:research-questions}
 
@@ -27,4 +29,4 @@ As the title of this thesis states, we used the dynamic symbolic execution (abbr
 RQ1: Is it possible to reliably end-to-end fuzz test a web application using Dynamic Symbolic Execution in ExpoSE?\\
 RQ2: Can it be used to reliably find security issues?
 
-
+RQ2 is directly dependent on the outcome of RQ1, as should the answer to it be a definite and resound “NO”, then there is no reason in trying to answer RQ2. A test that cannot be used to test a web application in general cannot be used for security issues. If, however, it is indeed possible, then we can go ahead to see whether ExpoSE can be used for discovering security related issues and bugs.

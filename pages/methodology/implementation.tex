@@ -1,26 +1,36 @@
-This chapter provides an overview of the project in \autoref{sec:overview}, outlines the necessary modifications to the existing project to execute expoSE on the execution platform in\autoref{sec:fwd-z3}, and presents the discovered system-imposed limitations in \autoref{sec:limits}. Some of them were contingent upon the platform on which the program was executed. In this case, an Apple MacBook Pro M1 Pro. 
+
+This chapter provides an overview of the project in \autoref{sec:overview}, outlines the necessary modifications to the existing project to execute expoSE on the execution platform in\autoref{sec:fwd-z3}, and presents the discovered system-imposed limitations in \autoref{sec:limits}. It then presents the initial idea in \autoref{sec:init-test-plain}. Some of them were contingent upon the platform on which the program was executed. In this case, an Apple MacBook Pro with an M1 Pro chip. 
 
 \section{Overview}
 \label{sec:overview}
 
-Here we will provide an overview of the implementation of the program, with its architecture diagram, specifically with how the express model sits in the processing chain.
 
-\centerline{\textbf{\huge{TODO}}}
-% Architecture Diagram
-% Specific to express
+ExpoSE functions as depicted in \autoref{fig:expose-struc} starting from a component referred to as the distributor to orchestrate the process of symbolic execution. The distributor facilitates the transmission of inputs to the executor, which, as its designation implies, executes the program under test utilizing these inputs. The execution of the program produces a trace, which is subsequently returned to the executor. From this trace, the path condition corresponding to the input is communicated to the SMT Solver. The SMT Solver solves the constraints and then transmits the resulting model back to the executor, enabling the executor to extrapolate alternative inputs. These alternative inputs are subsequently relayed to the distributor, thereby initiating the entire process again. In scenarios where multiple alternative inputs are generated, these inputs are executed concurrently.
+
+For our case, the program under test is not just one script, but consists of both the server and the client, but also of the express model, the request model and the response model. 
+
+\begin{figure}[ht]
+    \begin{center}
+        \includesvg[width = \textwidth]{exposeArchitectureDiagram.drawio}
+    \end{center}
+    \caption{Express model structure, as depicted in \cite{loring_practical_2021}, modified to depict the web application}
+    \label{fig:expose-struc}
+\end{figure}
 
 
 
+
+\FloatBarrier
 \section{Forwarding Changes of Z3}
 \label{sec:fwd-z3}
-This section provides an short overview of the changes made to two of the four main parts that make up ExpoSE. Both were relatively simple in nature, but they were required to fix one error that kept occurring.
+This section provides a short overview of the changes made to two of the four main parts that make up ExpoSE. Both were relatively simple in nature, but they were required to fix a z3 specific internal error, that kept occurring and caused the execution to fail.
 
 \subsection{Changes to z3}
 \label{sec:changes-z3}
 As the forked repository of z3 made for expoSE was almost 5 years old, and we occasionally noticed a null pointer exception in the c++ code, we decided to pull the changes from the original repository into the fork, almost 5000 commits, in the hopes of that the null pointer exception has been fixed meanwhile. 
-The forwarding went smoothly, with two exceptions. Z3 provided now the type "Char Pointer", which had to be added to the JavaScript portion (and the Python part, as JavaScript basically copies the bindings from Python) of the binding creation.
+The forwarding went smoothly, with two exceptions. Z3 now includes the type “Char Pointer”, which had to be added to the JavaScript portion (and the Python part, as JavaScript basically copies the bindings from Python) of the binding creation.
 
-The second exception was, that the z3 API now provided a few more callbacks, which, however, required parameters that were not implemented for JavaScript. These we simply decided to delete for our fork, as they were not used in expoSE, and only caused the binding generation to fail.
+The second exception was, that the z3 API now provided a few more callbacks, which, however, required parameters that were not implemented for JavaScript. We have chosen to eliminate these components from our fork over implementing them, as they were not utilized in expoSE and resulted in the failure of the binding generation.
 
 \subsection{Changes to z3JavaScript}
 \label{sec:changes-z3js}
@@ -34,7 +44,8 @@ In this section, we will explain the limitations imposed on the application, wha
 \label{sec:jsversion}
 We will start off with the hardest limitation of the application, and that is the fact, that we have to stay in syntax constructs offered by the JavaScript version known as ES6 (or ECMA 2015).
 
-This is a significant limitation, as it implies that we are unable to utilize an essential feature of contemporary JavaScript, specifically \textit{async} and \textit{await}. These two keywords refer to the asynchronous pattern that modern JavaScript employs. Without these, we will not be able to build an asynchronous application, which is a major limitation for a server that might have to wait for resources to load or for a computation-intensive process.
+This is a significant limitation, as it implies that we are unable to utilize an essential feature of contemporary JavaScript, specifically \textit{async} and \textit{await}. These two keywords refer to the asynchronous pattern that modern JavaScript employs. Without these, we will not be able to build a modern application, which is a major limitation for a server that might have to wait for resources to load or for a computation-intensive process. For these processes, we now have to rely on callbacks. 
+
 
 
 \subsection{HTTP Protocol}
@@ -48,16 +59,44 @@ Option B is to bypass the transmission of data entirely, by injecting the server
 
 
 We deemed the modelling of the HTTP object out of scope. Therefore, we worked under the assumption, that HTTP works as intended and went for option B, as that meant, we could focus on the actual web application, and could test it in isolation.
+
+
+\subsection{Symbolic Objects}
+\label{sec:sym-obj}
+While the other limits are specific to our use case, this issue is an universal one, as pointers can cause a problem on most symbolic execution engines as described by \citet{cha_unleashing_2012}, \citet{coppa_rethinking_2017} and \citet{elkarablieh_precise_2009}, just to name a few. The biggest culprits in javascript are symbolic objects, as they themselves have a pointer to a memory address, which holds the references for both parts of the key value pair, with the contents of these parts being pointers to another memory address. This poses a problem for discerning what the keys and the values should be, where they are stored and how they are accessed. A purely symbolic object therefore is unfeasible and should be avoided. However, a concrete object may hold symbolic values.
+
 \subsection{External Packages}
 \label{sec:externalpack}
-The last limit we found, was that while it was possible to import and use external packages, the DSE engine expose would assume, that any imported package was part of the code (which is technically true), meaning it would be instrumented and create execution branches. This led to an massive explosion in branches, and while it could be used to find bugs and errors in these external packages, it did not offer any use for finding issues in the part of the web application we wanted to test. 
+Our last hard limit was that, even though it was possible to import and use external packages, the DSE engine would assume that any imported package was part of the code. Although technically true, it meant it would be instrumented and create execution branches. This led to a massive explosion in branches, and while it could be used to find bugs and errors in these external packages aswell, it did not offer any use for locating issues in the part of the web application we wanted to test. 
 Hence, we opted out of using any external package for now.
 
 \subsection{Dependency Issues}
 \label{sec:dep-issues}
-While this was not a limit per se, it proved to be an issue with executing the tool chain of expoSE in the first place. When the codebase was created in 2017, almost all personal use computers were made on an x86 platform. While ARM was already widespread in mobile devices, there were only few personal computers running on an ARM instruction set\footnote{According to the investor report \href{https://www.arm.com/-/media/global/company/investors/Arm\%20Strategic\%20Review\%20-\%202017.pdf?revision=8473a535-6f7e-4ce5-85fe-0eb6f1f75487&la=en}{investor report} in 2017}. Therefore, little to no effort was spent on supporting it. 
+While this was not a limit per se, it proved to be an issue with executing the tool chain of expoSE in the first place. When the codebase was created in 2017, almost all personal use computers were made on an x86 platform. While ARM was already widespread in mobile devices, few personal computers were running on an ARM instruction set\footnote{We assume this to be the case, as even the \href{https://www.arm.com/-/media/global/company/investors/Arm\%20Strategic\%20Review\%20-\%202017.pdf?revision=8473a535-6f7e-4ce5-85fe-0eb6f1f75487&la=en}{investor report} in 2017 does not mention them}. Therefore, little to no effort was spent on supporting it. 
 With the release of the M1 processor by Apple, this was no longer the case.
 This meant that the ARM instruction set went from being rarely supported to a widely spread one.
-When we started working on this thesis, we noticed the lack of support. The project required Node version 14, and the package ffi-napi\footnote{https://www.npmjs.com/package/ffi-napi}, that provided the ability to create C bindings, which were used in z3,  required Node 16 or higher.
-Upgrading the node version initially, would in turn create an error in ffi-napi for the ARM-based M processors\footnote{As reported in issue https://github.com/node-ffi-napi/node-ffi-napi/issues/248}. \\
+When we started working on this thesis, we noticed the lack of support. The project required Node version 14, and the package ffi-napi\footnote{https://www.npmjs.com/package/ffi-napi}, that provided the ability to create C bindings, which were used in z3, required Node 16 or higher.
+Upgrading the node version initially, would in turn create an error in ffi-napi for the ARM-based M processors~\footnote{As reported in issue https://github.com/node-ffi-napi/node-ffi-napi/issues/248}.\\
 While working on this project, the issue got resolved.
+
+
+
+\section{Initial Test Plain JS Application}
+\label{sec:init-test-plain}
+After addressing all the fundamental issues, we began by creating a small server in plain JavaScript to explore whether it is possible to generate requests, process them, and return the correct response for the request. For example, a GET request with the URL '/test' is handled by a GET route registered as '/test', and not incorrectly by the POST route. 
+
+\subsection{Idea}
+
+The objective was to construct a plain JavaScript server by utilizing the http package's method “createServer” and subsequently eliminating all components that depend on http, thus skipping the actual server-client connection.
+We had two goals for this: 
+\begin{itemize}
+    \item  We created a server that had both static and variable routes, notably one route that consisted only of a regular expression, to test whether all routes could be found by the symbolic variable for the path alone.
+    \item  We also implemented a short test for injecting code into the response, by asserting that the client cannot send any script tag \lstinline{<script><\script>} in the request data, while asserting that it has to be a valid email. Which in turn meant, expoSE has to try to violate the assertion, by creating inputs, that contain a script tag and are no valid emails. 
+\end{itemize}
+For the client side we created a bare-bones client, that was generating the symbolic request, and passed it over to the server by calling the onRequest method of the server, which gets called whenever a request is sent, thereby bypassing HTTP. 
+
+\subsection{Evaluation}
+This, albeit small test application, showed us, by fulfilling both of our expected outcomes, that it indeed is possible to test a server with expoSE. Finding all the request routes within the server was straightforward, with a minor drawback: the regular expression route was not functional in a switch-case construct due to its use as a literal and not as a regular expression to match a string. 
+The second objective was only moderately successful, as, despite demonstrating theoretically that the generation of a string containing a script tag works, it often exceeded the timeout limit, with a few exceptions in a test of 50 runs, where a matching string was immediately generated.
+
+Despite this, we deemed the initial test application a success, as it strongly suggested that it is possible to test a server, explore all possibly routes and locate issues in the validation, data processing and usage of this data. Hence, we moved on from plain JavaScript to the usage of a framework, in our case, Express.js.
