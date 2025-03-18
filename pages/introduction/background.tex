@@ -301,7 +301,9 @@ The most significant limitation is computable paths, which have the potential to
 But even with DSE in mind, the paths grow exponentially with the number of conditionals in a program.  \cite{cadar_symbolic_2013}
 This also occurs with symbolic addresses, as it has to account for any possible memory address a variable can occupy \cite{elkarablieh_precise_2009}.  
 
-To address this, most DSE frameworks employ various kinds of techniques for reducing the number of paths, like path merging, where a reoccurring conditional, can be merged into one (for example in a loop), or search heuristics 
+To address this, most DSE frameworks employ various kinds of techniques for reducing the number of paths. 
+One such technique is path merging based on heuristics, where a reoccurring conditional, can be merged into one (for example in a loop)   cite statemerging kinder%TODO
+\citet{cha_unleashing_2012} propose a solution for reducing the possible paths for symbolic addresses by concretizing writes and only allowing sybolic.    
 
 It also is not suitable for boundary testing, as DSE checks for reachability, and once a path is covered, it will not move back and check for edge case in this path, possibly missing unexpected behaviour. \cite{berthier_efficient_2023}
 
