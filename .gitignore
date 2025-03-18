@@ -14,6 +14,10 @@ thesis.pdf
 *.ps
 *.ps.gz
 *.bak
+*.glo
+*.ist
+*.lof
+*.lot
 *~
 #*#
 .st_lt_cache/
