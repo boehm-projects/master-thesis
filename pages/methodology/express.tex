@@ -31,22 +31,22 @@ To generate the request, the server was required to instantiate the client. Now 
         line width=0.1mm, line cap=round, draw=black
     }}
 
-        \node (listen) [box, yshift = 1cm] {listen};
+        \node (listen) [box, yshift = 1cm] {\lstinline{listen}};
 
         \begin{scope}
-                \node (use) [box, left = of listen, xshift = -3cm ]{use};      
-        \node (middleware) [box, below = of use, xshift = 2cm] {middlware};
-        \node (router) [box, left = of middleware] {router};
+          \node (use) [box, left = of listen, xshift = -3cm ]{\lstinline{use}};      
+          \node (middleware) [box, below = of use, xshift = 2cm] {\lstinline{middlware}};
+          \node (router) [box, left = of middleware] {\lstinline{router}};
         
         
         \node (stack)[stack=5, below = of middleware, xshift = -2cm,fill=orange!20]  {
-            \nodepart{one} route
-            \nodepart{two} route
-            \nodepart{three} route
-            \nodepart{four} middleware
-            \nodepart{five} middleware
+            \nodepart{one}\lstinline{route} 
+            \nodepart{two} \lstinline{route}
+            \nodepart{three} \lstinline{route}
+            \nodepart{four} \lstinline{middleware}
+            \nodepart{five}  \lstinline{middleware}
             };
-        \node (handle) [box, below = of listen] {handleStack};
+          \node (handle) [box, below = of listen] {\lstinline{handleStack}};
         %
           %\draw  [arrow](use) -- (listen) node[midway, above] {entry point};
         \draw  [arrow](use) -- (middleware) node[midway, right] {use Middleware};
@@ -56,10 +56,10 @@ To generate the request, the server was required to instantiate the client. Now 
         \draw  [doubleArrow](handle) -- (stack.north east) node[midway, right] {generate response};
         \draw  [doubleArrow](listen) -- (handle) node[midway, right] {process request};
         
-        \draw[->, thick] (stack.south east)  -- ++ (0,-0.2) -- ++(-7.5, 0)   node[midway, below] {process request};
+        \draw[->, thick] (stack.south east)  -- ++ (0,-0.2) -- ++(-7.0, 0)   node[midway, below] {process request};
 
-        \draw[lmugreen,thick,dotted] ($(listen.north west)+(-1.2,0.9)$)  rectangle ($(stack.south east)+(6,-0.9)$)node[box]{request handling};
-        \draw[red,thick,dotted] ($(use.north west)+(-2.4,0.9)$)  rectangle ($(stack.south east)+(0.2,-0.9)$)node[box]{stack creation};        
+        \draw[lmugreen!80,thick,dotted] ($(listen.north west)+(-1.2,0.9)$)  rectangle ($(stack.south east)+(6.2,-0.9)$)node[box]{request handling};
+        \draw[blue!98,thick,dotted] ($(use.north west)+(-2.4,0.9)$)  rectangle ($(stack.south east)+(0.2,-0.9)$)node[box]{stack creation};        
 
         \end{scope}
     
@@ -91,7 +91,7 @@ If, for instance, when we add the following four elements to the array:
     \item \lstinline{router.post('/createUser', callback(req, res, next))} - add a POST request via a router
     \item \lstinline{app.use("modify response", callback(req, res, next))} - add a middleware layer, which will post-process a request
 \end{itemize}
-This yields the following array \autoref{fig:stack-example}:
+This yields an array of object containing the routes and middleware layers as depcited in \autoref{fig:stack-example}.
 \begin{figure}[ht]
 	\begin{lstlisting}[language=JavaScript, gobble=4]
     [

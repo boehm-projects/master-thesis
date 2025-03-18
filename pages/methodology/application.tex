@@ -1,17 +1,22 @@
 
+This chpater is all about using and abusing a web application:
+\autoref{sec:exp-app} presents how to use the express model and how to test an web application. 
+\autoref{sec:xss} then briefly explains how to abuse an server that has no input validation or verification.
 
 
 \section{Express Application}
 \label{sec:exp-app}
-Now we want to address how to actually use the model, what changes are required for a server to use it and how to generate a testable server.
-Basically, how to take an existing server and test it using the model and expoSE.
+Now we want to address how to actually use the express model, 
+what changes are required for an existing server to use it and how to generate a testable server.
 
 
 \subsection{Necessary Modifications} 
 \label{sec:nec-mods}
 
-Since the model is located in expoSE right now, all it requires is a slight modification to the imports and how express is called. This means, the import requires the relative path, and cannot be imported via the node package manager (npm). 
-The usage is also slightly different, as the express model instance needs to be initiated after importing, while express itself is initiated when it is imported. 
+Since the model is located in expoSE right now, all it requires is a slight modification to the imports and how express is called.
+This means, the import requires the relative path, and cannot be imported via the node package manager (npm). 
+The usage is also slightly different, as the express model instance needs to be initiated after importing,
+while express itself is initiated when it is imported. 
 Other than that, it can be used just like express.js, as the basic methods are implemented.
 
 
@@ -19,43 +24,74 @@ Other than that, it can be used just like express.js, as the basic methods are i
 \subsection{Testing} 
 \label{sec:app-testing}
 
-Testing a web application using the model is a straightforward process.  By injecting the client into the server code and invoking the function that typically converts an input into an HTTP request, it becomes feasible to generate inputs that test all routes, incorporating various parameters and bodies.
+Testing a web application using the model is a straightforward process.
+By injecting the client into the server code and invoking the function that typically converts an input into an HTTP request,
+it becomes feasible to generate inputs that test all routes, incorporating various parameters and bodies.
 
-To facilitate this, the client requires certain modifications: First, it must utilize the S\$ library, which serves as the interface to ExpoSE, as explained in\autoref{sec:expose}. Subsequently, all variables within the request should be substituted with symbolic inputs. In instances where the server expects a complex data structure in the body of the request, it is advisable to send an object encapsulating all fields that the server can process across all routes. This recommendation stems from the challenges associated with symbolic objects, as discussed in \autoref{sec:sym-obj}. 
-This approach allows for the generalization of a single test without necessitating multiple executions to cover all required fields, as any fields not utilized by the specific route are ignored.
+To facilitate this, the client requires certain modifications: 
+First, it must utilize the S\$ library, which serves as the interface to ExpoSE, as explained in\autoref{sec:expose}. 
+Subsequently, all variables within the request should be substituted with symbolic inputs. 
+In instances where the server expects a complex data structure in the body of the request,
+it is advisable to send an object encapsulating all fields that the server can process across all routes.
+This recommendation stems from the challenges associated with symbolic objects, as discussed in \autoref{sec:sym-obj}. 
+This approach allows for the generalization of a single test without necessitating multiple executions to cover all required fields,
+as any fields not utilized by the specific route are ignored.
 
-Once the client is either modified or created to produce a symbolic request, a singular execution of ExpoSE suffices to generate diverse requests that effectively cover all possible paths of a request and trigger all potential unique responses.
+Once the client is either modified or created to produce a symbolic request, 
+a singular execution of ExpoSE suffices to generate diverse requests that effectively cover all
+possible paths of a request and trigger all potential unique responses.
 
 
 
 
 \section{Cross-Site Scripting}
 \label{sec:xss}
-Cross-site scripting (XSS) is a security vulnerability that enables the execution of malicious code on a remote server or another client by exploiting weaknesses in server-side input validation. \cite{bisht_xss-guard_2008}
+Cross-site scripting (XSS) is a security vulnerability that enables the execution of malicious code on a remote server or
+another client by exploiting weaknesses in server-side input validation. \cite{bisht_xss-guard_2008}
 
-\autoref{fig:xss-simp} illustrates a simplified scenario in which XSS can be employed to execute code on another machine by sending malicious code to the server, which subsequently transfers it to unsuspecting clients. A common instance of this vulnerability occurs when an application provides a web interface that allows users to enter and store text without adequate server-side input validation and sanitization, thereby failing to prevent users from executing HTML scripts on the devices of other users.\
+\autoref{fig:xss-simp} illustrates a simplified scenario in which XSS can be employed to execute code on
+another machine by sending malicious code to the server, which subsequently transfers it to unsuspecting clients.
+A common instance of this vulnerability occurs when an application provides a web interface that allows users
+to enter and store text without adequate server-side input validation and sanitization,
+thereby failing to prevent users from executing HTML scripts on the devices of other users.
 
-A recent example of this would be a vulnerability in the web interface web UI of Cisco Enterprise Chat and Email \footnote{https://www.cisco.com/c/en/us/support/docs/csa/cisco-sa-ece-xss-CSQxgxfM.html}. Cisco is a company that develops communication and security-related tools, underscoring the critical need for rigorous testing for vulnerabilities, as even organizations specializing in security can overlook certain issues.
+A recent example of this would be a vulnerability in the web interface web UI of Cisco Enterprise Chat and 
+Email\footnote{https://www.cisco.com/c/en/us/support/docs/csa/cisco-sa-ece-xss-CSQxgxfM.html}. 
+Cisco is a company that develops communication and security-related tools, 
+underscoring the critical need for rigorous testing for vulnerabilities,
+as even organizations specializing in security can overlook certain issues.
 
-The severity of a vulnerability hinges on the accessibility of the exploit. If an attack requires authentication and allows for traceability, it may represent a minor inconvenience and therefore calls for a patch of the issue, as the attacker can be identified. However, if an XSS attack can be executed anonymously, this poses a significant risk to all users and requires immediate remediation.
+The severity of a vulnerability hinges on the accessibility of the exploit. 
+If an attack requires authentication and allows for traceability,
+it may represent a minor inconvenience and therefore calls for a patch of the issue,
+as the attacker can be identified. However, if an XSS attack can be executed anonymously,
+this poses a significant risk to all users and requires immediate remediation.
 
-Testing for XSS is on one hand difficult, as there are multiple ways to execute a script in a web browser, e.g sending a message containing the HTML tags \lstinline{<script></script>}, or by embedding an HTML reference “href=url”. This diversity complicates the creation of regular expressions that can effectively identify all potential exploits without heavily restricting legitimate user input. However, obvious vulnerabilities can be detected through a comparative analysis of input and output. If the input and output remain unchanged, especially when containing special characters like “\textless” or “/”, this may indicate that the system is susceptible to script injection, allowing for the execution of code on a different machine.
+Testing for XSS is on one hand difficult, as there are multiple ways to execute a script in a web browser,
+e.g sending a message containing the HTML tags \lstinline{<script></script>}, 
+or by embedding an HTML reference “href=url”. 
+This diversity complicates the creation of regular expressions that can effectively identify 
+all potential exploits without heavily restricting legitimate user input.
+However, obvious vulnerabilities can be detected through a comparative analysis of input and output.
+If the input and output remain unchanged, especially when containing special characters like “\textless” or “/”,
+this may indicate that the system is susceptible to script injection, allowing for the execution of code on a different machine.
 
 
 \begin{figure}[h]
 \centering
-    \begin{tikzpicture}[node distance=1cm]
+\scalebox{0.7}{%
+\begin{tikzpicture}[node distance=1cm]
 
 \tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=red!30]
 
 \tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=orange!30]
-\tikzstyle{decision} = [diamond, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=green!30]
+\tikzstyle{decision} = [diamond, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=lmugreen!69]
 \tikzstyle{arrow} = [thick,->,>=stealth]
 
 
 
 \node (start) [startstop] {Malicious Attacker Client};
-\node (pro1) [process, below = of start] {\textless script\textgreater alert("Hello")\textless/script\textgreater};
+\node (pro1) [process, below = of start] {\lstinline{ <script>alert("Hello")</script>}};
 \node (dec1) [decision, below = of pro1, yshift=-1cm] {Server};
 \node (pro2a) [startstop, below  = of dec1, xshift=-3cm] {Unassuming Client};
 \node (pro2b) [startstop, below  = of dec1, xshift=3cm] {Unassuming Client};
@@ -69,7 +105,8 @@ Testing for XSS is on one hand difficult, as there are multiple ways to execute 
 \draw [arrow] (dec1) -- node[anchor=west] {distribute message} (pro2b);
 \draw [arrow] (pro2a) -- node[anchor=west] {execute code}(stopA);
 \draw [arrow] (pro2b) -- node[anchor=west] {execute code}(stopB);
-\end{tikzpicture}   
+\end{tikzpicture}}
+      
     \caption{An example of a XSS attack. A malicious attacker sends a message to the server that contains a script, which will be distributed to clients. Upon receiving the message, the script will be executed.}
     \label{fig:xss-simp}
 \end{figure}

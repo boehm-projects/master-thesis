@@ -15,7 +15,7 @@ This shows, that testing is not just an often overlooked, annoying, side effect 
 Automating this costly testing process, therefore, is a highly coveted question, which many approaches have tried to give an answer to. 
 Recently, the use of Dynamic Symbolic Execution has been adopted as an approach for automating and generating test coverage, to uncover software bugs and malicious openings, and a many frameworks for DSE testing have been developed, each with its limitations and solutions.
 ExpoSE is such a framework to test software.\\
-
+\cite{jhala_software_2009}
 The severity of bugs and malicious openings depend on the kind of program and its execution circumstances: is it an offline program, just running without any outside connection, is it a program for Internet of Things (IoT), connecting hardware with the internet, like a smart thermostat, or is it a web application, holding private information, distributing data all over the world?
 All of these programs can include security issues, and to find these, programs are tested extensively. 
 
@@ -29,4 +29,4 @@ In this thesis, we want to apply Dynamic Symbolic Execution by using ExpoSE as a
 RQ1: Is it possible to reliably end-to-end fuzz test a web application using Dynamic Symbolic Execution in ExpoSE?\\
 RQ2: Can it be used to reliably find security issues?
 
-RQ2 is directly dependent on the outcome of RQ1, as should the answer to it be a definite and resound “NO”, then there is no reason in trying to answer RQ2. A test that cannot be used to test a web application in general cannot be used for security issues. If, however, it is indeed possible, then we can go ahead to see whether ExpoSE can be used for discovering security related issues and bugs.
+RQ2 is directly dependent on the outcome of RQ1, as should the answer to it be a definite and resound “NO”, then there is no reason in trying to answer RQ2. A test that cannot be used to test a web application in general cannot be used for security issues. If, however, it is indeed possible, then we can go ahead to see whether ExpoSE can be used for discovering security related issues and bugs. worng

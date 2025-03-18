@@ -10,7 +10,7 @@
 *.blg
 *.bcf
 *.run.xml
-*.pdf
+thesis.pdf
 *.ps
 *.ps.gz
 *.bak
@@ -25,7 +25,8 @@
 *.cb
 *.cb2
 comment.cut
-
+./out
+./aux
 # Additional TeX intermediate files
 *.nav
 *.snm

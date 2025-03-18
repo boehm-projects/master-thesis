@@ -11,16 +11,16 @@ To provide an overview of all the topics that will be addressed, we will begin b
 A \textit{web application} has been defined as “a software application, executed by a web server, which responds to dynamic web page requests over HTTP” by the Web Application Security Consortium (WASC) ~\cite{noauthor_web_2012}. 
 In simpler terms, a web application is software that runs on a server and users access it through a web browser (like Chrome or Firefox) over the internet.
 
-Typically, the resources and scripts of web applications — such as images, text, or functionalities — are requested by the client, which is the user's computer or device, using a web browser or similar tools. This interaction follows a set of rules known as the API (Application Programming Interface), which specifies what requests can be made and how the server should respond.
+Typically, the resources and scripts of web applications — such as images, text, or functionalities — are requested by the client, which is the user's computer or device, using a web browser or similar tools. This interaction follows a set of rules known as the \gls{api}, which specifies what requests can be made and how the server should respond.
 The~\autoref{fig:simplified-web-app} illustrates the basic communication process between the client (the user's device), the server (where the application runs), and external services (such as another server).
 
-Most web applications also use a database, which is a structured way of storing data, to keep information consistently available and reliable. For the purposes of this thesis, we assume that the web application has a monolithic architecture. This means that it operates as a single cohesive program on a physical computer, rather than being divided into separate parts that run on different cloud services (like AWS, or Amazon Web Services, which offers online computing power without needing dedicated hardware~\footnote{https://aws.amazon.com/})
+Most web applications also use a database, which is a structured way of storing data, to keep information consistently available and reliable. For the purposes of this thesis, we assume that the web application has a monolithic architecture. This means that it operates as a single cohesive program on a physical computer, rather than being divided into separate parts that run on different cloud services (like AWS, or Amazon Web Services, which offers online computing power without needing dedicated hardware\footnote{https://aws.amazon.com/})
 Additionally, we assume the server follows REST (Representational State Transfer) principles, which are guidelines for how web services should operate to enable smooth communication as described by \citet{roy_t_fielding_rest_2008}. 
 The web server processes requests that adhere to the HTTP (Hypertext Transfer Protocol) standard, which is the foundational protocol used for transmitting data on the web (ref. ~\autoref{tab:rest_http_methods}). It can be used  with the database operations, commonly known as CRUD (Create, Read, Update, Delete) operations, as established by \citet{martin_managing_1983}, when a web application utilizes a persistent database.
 This adherence ensures that the server and client can operate independently, meaning they can be developed and updated separately without affecting each other\cite{fielding_http_2022}.
 
 
-\begin{figure}[h]
+\begin{figure}[ht]
     \centering
     \begin{tikzpicture}[node distance=3cm]
     % Define styles for nodes and arrows
@@ -226,9 +226,11 @@ In this subsection, we will demonstrate the concept of DSE by employing the foll
             }
         }
         x += 1
-        if (x != 0 && y != 0)
-        {
+        if (x != 0 )
+        { 
+          if ( y != 0){
             x = y
+          }
         }
     }
 \end{lstlisting}
@@ -237,38 +239,7 @@ In this subsection, we will demonstrate the concept of DSE by employing the foll
 &
 \begin{minipage}{\dimexpr0.5\textwidth-2\tabcolsep}
 \centering
-
-    % Left Diagram - White Box Fuzzing
-    \begin{tikzpicture}[node distance=1cm,every node/.style={scale=0.7}]
-a
-        \tikzstyle{node} = [circle,  radius=0.5cm, text centered, draw=black, fill=blue!20]
-
-        \tikzstyle{arrow} = [thick, ->, >=stealth]
-
-        \node (foo) [] {};
-        \node (l0) [node, below = of foo, yshift=+0.5cm] {$l_0$};
-        \node (l1) [node, below = of l0, xshift=-1.5cm] {$l_1$};
-        \node (l2) [node, below = of l0, xshift=2.5cm] {$l_2$};
-        \node (l3) [node, below = of l2, xshift=1cm] {$l_3$};
-        \node (l4) [node, below = of l0, yshift=-3.5cm] {$l_4$};
-        \node (l5) [node, below = of l4] {$l_5$};
-        \node (l6) [node, below = of l5, xshift=-1cm] {$l_6$};
-        \node (l7) [node, below = of l5, yshift=-1.5cm] {$l_7$};
-
-        % Arrows
-        \draw[arrow] (foo)--(l0);
-        \draw  [arrow](l0) -- (l1) node[midway, left] {$\neg(x == y)$};
-        \draw  [arrow](l0) -- (l2) node[midway, right] {$x == y$};
-        \draw  [arrow](l1) -- (l4) node[midway, left] {$x = x + y$};
-        \draw  [arrow](l2) -- (l3) node[midway, right] {$y > 8$};
-        \draw  [arrow](l3) -- (l4) node[midway, right] {$ y = y+1 $};
-        \draw  [arrow](l2) -- (l4) node[midway, left] {$!(y > 8)$};
-        \draw  [arrow](l4) -- (l5) node[midway, right] {$x=x+1$};
-        \draw  [arrow](l5) -- (l6) node[midway, left] {$\neg(x == 0)\land \neg(y == 0)$};
-        \draw  [arrow](l5) -- (l7) node[midway, right] {$(x == 0)\vee (y == 0)$};
-        \draw  [arrow](l6) -- (l7) node[midway, left] {$x = y$};
-    \end{tikzpicture}
-    
+     \includegraphics{../luatex/cfg/out/cfg.pdf}
 \end{minipage}
 
 \\
@@ -286,8 +257,8 @@ a
 \end{minipage}
 
 \end{tabular*}
-To facilitate the process, we can first depict the program as a Control Flow Graph (CFG) \autoref{fig:example-program-graph}. This shows what conditions have to be met by the input and which transformations will be applied on execution.
-
+To facilitate the process, we can first depict the program as a Control Flow Graph (CFG) \autoref{fig:example-program-graph}. 
+The CFG displays the conditions and transformations along its edges, with the vertices signifying the state of the program.
 On entering  the program, we assume that the initial value of x=1 and y=0, just to tell the DSE Engine the types of the variables, and to give a starting point. 
 
 \begin{center}
@@ -295,28 +266,29 @@ On entering  the program, we assume that the initial value of x=1 and y=0, just 
     \begin{table}[h]
         \begin{tabular}{lll}
             where & pc & the path condition \\
-             & $S(x) \rightarrow X$& the symbolic value of x\\
+             & $S(x) \rightarrow X$& the symbolic value of x, i.e. the applied transformations on the initial value\\
              & $C(x) \rightarrow 0$& the concrete value of x\\
         \end{tabular}
     \end{table}
-
 \end{center} 
+In similar fashion, we can now walk through the execution, and create a branch whenever we encounter diverging paths.
+For example, right at the start, we have two possible routes the execution can take: $x == y$ and $\neg(x == y)$.
+We can now construct the symbolic execution tree displayed in \autoref{fig:symbolic-execution-tree} by tracking the path conditions and transformations of the variables.
 
-In similar fashion, we can now walk through the execution, and create a branch whenever we encounter diverging paths. For example, right at the start, we have two possible routes the execution can take: $x == y$ and $\neg(x == y)$. We can now construct the following symbolic execution tree \autoref{fig:symbolic-execution-tree} by tracking the path conditions and transformations of the variables.
-
-
-
-\begin{sidewaysfigure}[h]
-    \begin{center}
-        \includegraphics[width= \textwidth]{sysexecu.drawio.png}
-    \end{center}
-    \caption{Symbolic execution tree of \autoref{fig:example-program} and the initial input for each branch}
-    \label{fig:symbolic-execution-tree}
+\begin{sidewaysfigure}
+  \centering
+  \includegraphics[width=\textwidth]{../luatex/symexe/out/symexe.pdf}    
+  \caption{Symbolic execution tree of \autoref{fig:example-program} , displaying the path condition and the concolic state. Unreachable paths are highlighted in red.}
+  \label{fig:symbolic-execution-tree}
 \end{sidewaysfigure}
 
 
-After constructing the execution tree, it is possible to generate distinct inputs for each of the leaf nodes. For instance, if we want to determine which input would cover the branch in the middle of the tree, we simply need to solve the constraints represented as  $(x == y \land y > 8 \land (\neg( x==0 ) \land \neg(y == 0 ))$. Solving these constraints yields the answer of (x = 9, y = 9), which indicates that this input will satisfy the specified conditions for that branch. 
-Any condition that cannot be satisfied means that the leaf node cannot be reached no matter the input, as it can be seen in \autoref{fig:symbolic-execution-tree} at the branch highlighted with the red cross.
+
+
+After constructing the execution tree, we can generate distinct inputs for each of the leaf nodes, checking for satisfiability.
+For instance, if we want to determine which input would cover the branch in the middle of the tree, we can do so by solving the constraints  $(\neg(X \neq Y) \land (Y > 8) \land \neg( X+1==0 ) \land \neg(Y+1 \neq 0 ))$. 
+Solving these constraints yields the answer of (x = 9, y = 9), which indicates that this input will satisfy the specified conditions for that branch. 
+Any condition that cannot be satisfied means that the leaf node cannot be reached no matter the input. The two leafs highlighted in red in  \autoref{fig:symbolic-execution-tree} showcase this.
 These constraints are usually solved by an SMT Solver, which we will briefly explain in \autoref{sec:smtsolver}.
 
 
@@ -401,8 +373,8 @@ Although the functions exhibit variation in their parameters, they always includ
     J$.N(241, 'y', y, 0);               // Init y
     var S$ = J$.X1(41,                  // Top level declaration
         J$.W(33, 'S$',                  // Write the result of the following:
-            J$.F(25,                    // Call the function with the follwing parameter:
-                J$.R(9, 'require', require, 2),  // Read the value of the expression "require"
+            J$.F(25,                 // Call the function with the follwing parameter:
+                J$.R(9, 'require', require, 2),// Read the value of "require"
                 0)  (
                     J$.T(17, "S$", 21, false)    // Retrieve the value of the S$ object
                     ), S$, 3));
@@ -429,61 +401,54 @@ This example, of course, is almost as simple as it can get. This is because Java
 \begin{table}[h]
 \resizebox{\linewidth}{!}{%
 	\begin{tabular}{l|l|l}
-		J\$.U            & Unary operation                                       & unaryPre and unary                      \\
-		J\$.B            & Binary operation                                      & binaryPre and binary                    \\
-		J\$.C            & Condition                                             & conditional                             \\
-		J\$.C1           & Switch key. x in switch(x) { ... }                    & no callback                             \\
-		J\$.C2           & case label C1 === C2                                  & no own callback, uses callback of J\$.C \\
-		J\$.\_           & Last value passed to C                                & no own callback                         \\
-		J\$.H            & hash in for-in. Wrap object o in for (x in o) { ... } & forinObject                             \\
-		J\$.I            & Ignore argument (Identity                             & no callback                             \\
-		J\$.G            & getField                                              & getFieldPre and getField                \\
-		J\$.P            & putField                                              & putFieldPre and putField                \\
-		J\$.R            & Read variable                                         & read                                    \\
-		J\$.W            & Write variable                                        & write                                   \\
-		J\$.N            & Init                                                  & declare                                 \\
-		J\$.T            & object/function/regexp/array Literal                  & literal                                 \\
-		J\$.F            & Function call                                         & invokeFun                               \\
-		J\$.M            & Method call                                           & invokeFun and uses callbacks of J\$.P   \\
-		J\$.A            & Modify and assign +=, -= ...                          & uses callbacks of J\$.P and J\$.B       \\
-		J\$.Fe           & Function enter                                        & functionEnter                           \\
-		J\$.Fr           & Function return                                       & functionExit                            \\
-		J\$.Se           & Script enter                                          & scriptEnter                             \\
-		J\$.Sr           & Script return                                         & scriptExit                              \\
-		J\$.Rt           & returned value                                        & \_return                                \\
-		J\$.Th           & thrown value                                          & \_throw                                 \\
-		J\$.Ra           & Reads the return value stored by call to Rt()         & no callback                             \\
-		J\$.Ex           & Uncaught exceptions                                   & no callback                             \\
-		J\$.L            & Returns the last computed value                       & no callback                             \\
-		J\$.X1           & top level expression                                  & endExpression                           \\
-		J\$.Wi           & with statement                                        & \_with                                  \\
-		J\$.endExecution & terminating execution                                 & endExecution                            \\
-		J\$.S            & with statement                                        & runInstrumentedFunctionBody             \\
+    {\lstinline|J$.U           |} & Unary operation                                       & {\lstinline|unaryPre|} and {\lstinline|unary|}                      \\
+		{\lstinline|J\$.B           |} & Binary operation                                      & \lstinline|binaryPre| and \lstinline|binary|                    \\
+		{\lstinline|J\$.C           |} & Condition                                             & \lstinline|conditional|                             \\
+		{\lstinline|J\$.C1          |} & Switch key \lstinline|x in switch(x) { ... }|                    & no callback                             \\
+    {\lstinline|J\$.C2          |} & case label \lstinline|C1 === C2|                                  & no own callback, uses callback of {\lstinline|J\$.C|} \\
+		{\lstinline|J\$.\_          |} & Last value passed to C                                & no own callback                         \\
+    {\lstinline|J\$.H           |} & hash in for-in. Wrap object \lstinline|o in for (x in o) { ... }| & {\lstinline|forinObject|}                             \\
+  {\lstinline|J\$.I           |} & Ignore argument (Identity)                             & no callback                             \\
+		{\lstinline|J\$.G           |} & Get a field                                              & \lstinline|getFieldPre| and \lstinline|getField|                \\
+		{\lstinline|J\$.P           |} & Put a Field                                             & \lstinline|putFieldPre| and \lstinline|putField|                \\
+		{\lstinline|J\$.R           |} & Read variable                                         & \lstinline|read|                                    \\
+		{\lstinline|J\$.W           |} & Write variable                                        &\lstinline|write |                                  \\
+		{\lstinline|J\$.N           |} & Init                                                  &\lstinline|declare|                                 \\
+		{\lstinline|J\$.T           |} & object/function/regexp/array Literal                  &\lstinline|literal |                                \\
+		{\lstinline|J\$.F           |} & Function call                                         &\lstinline|invokeFun|                               \\
+    {\lstinline|J\$.M           |} & Method call                                           &\lstinline|invokeFun| and uses callbacks of {\lstinline|J\$.P|}   \\
+		{\lstinline|J\$.A           |} & Modify and assign \lstinline|+=, -= ...|                          & uses callbacks of \lstinline|J\$.P| and \lstinline|J\$.B|       \\
+		{\lstinline|J\$.Fe          |} & Function enter                                        &\lstinline| functionEnter |                          \\
+		{\lstinline|J\$.Fr          |} & Function return                                       &\lstinline| functionExit  |                          \\
+		{\lstinline|J\$.Se          |} & Script enter                                          &\lstinline| scriptEnter   |                          \\
+		{\lstinline|J\$.Sr          |} & Script return                                         &\lstinline| scriptExit    |                          \\
+		{\lstinline|J\$.Rt          |} & returned value                                        &\lstinline| \_return      |                          \\
+		{\lstinline|J\$.Th          |} & thrown value                                          &\lstinline| \_throw       |                          \\
+		{\lstinline|J\$.Ra          |} & Reads the return value stored by call to \lstinline|Rt()|         & no callback                             \\
+		{\lstinline|J\$.Ex          |} & Uncaught exceptions                                   & no callback                             \\
+		{\lstinline|J\$.L           |} & Returns the last computed value                       & no callback                             \\
+		{\lstinline|J\$.X1          |} & top level expression                                  &\lstinline| endExpression               |            \\
+		{\lstinline|J\$.Wi          |} & with statement                                        &\lstinline| \_with                      |            \\
+		{\lstinline|J\$.endExecution|} & terminating execution                                 &\lstinline| endExecution                |            \\
+		{\lstinline|J\$.S           |} & with statement                                        &\lstinline| runInstrumentedFunctionBody |            \\
 	\end{tabular}}
 	\caption{Jalangi2  functions, their descriptions, and their callbacks as stated in the JavaScript Documentation of the analyser}
 	\label{tab:jal-fun}
 \end{table}
 
 \FloatBarrier
-\subsection{Z3 SMT Solver}
+\subsection{Z3 SMT Solver and Z3JavaScript}
 \label{sec:z3}
 
 
 ExpoSE uses the Z3 SMT Solver \cite{de_moura_z3_2008} for solving the found path conditions of the analysed program. Developed by Microsoft, it has constant progress and improvements to its capabilities.
 
-To use the SMT Solver, it offers an interface that connects a program in a higher-level language, like Python, Java, C++, or JavaScript, for which z3 offers a NPM (Node Package Manager) package since 2022. In expoSE, however, it is used in combination with the project Z3JavaScript, explained in the following \autoref{sec:z3js}, as, when expoSE got developed, there were no native JavaScript bindings available for Z3. 
+To use the SMT Solver, it offers an interface that connects a program in a higher-level language, like Python, Java, C++, or JavaScript, for which z3 offers a NPM (Node Package Manager) package since 2022. In expoSE, however, it is used in combination with the project Z3JavaScript, as, when expoSE got developed, there were no native JavaScript bindings available for Z3. 
 
 These bindings are required to connect these higher-level languages to the core system of z3, which is implemented in C.
 
 ExpoSE uses it to solve the path conditions generated by the first run of the symbolic execution, to yield new inputs, which in turn add new path conditions to be solved by Z3. 
 
-
-
-
-
-
-\subsection{Z3Javascript}
-\label{sec:z3js}
 
 Z3Javascript is a wrapper for the API of Z3, which generates the JavaScript bindings to be used in ExpoSE using ffi-napi, and builds the Z3 binary.
 
@@ -510,6 +475,6 @@ Now, while short, there already is a lot to unpack here. Let's go over it line b
     \item Line 4: \lstinline{let y = S$.symbol("multiplier", 2)}: We then create a symbolic variable “y”, internally called “multiplier”, this time, we also assign a starting seed (2), which at the same time defines the type of the variable.
     \item Line 5 to 7: then apply these variables and try to do something with them. Here, we have a simple condition ($x > 0$), which, when fulfilled, triggers the assertion \lstinline{S$.assert(x*y > x)}, which throws the exception “assertion violation”, if  the assertion is violated.
 \end{itemize}
-Afterwards, expoSE uses the functions exposed by the Jalangi2 backend  to access the instrumented code. For this, expoSE had to implement the callbacks of the provided backend functions. A template for these can be found in the Jalangi2 source code, with explanations for each of the functions, as part of an example analysis program \footnote{https://github.com/Samsung/jalangi2/blob/master/src/js/runtime/analysisCallbackTemplate.js}. 
+Afterwards, expoSE uses the functions exposed by the Jalangi2 backend  to access the instrumented code. For this, expoSE had to implement the callbacks of the provided backend functions. A template for these can be found in the Jalangi2 source code, with explanations for each of the functions, as part of an example analysis program\footnote{https://github.com/Samsung/jalangi2/blob/master/src/js/runtime/analysisCallbackTemplate.js}. 
 It starts by registering all local variables, functions and formal parameters, in our example case the variables and constants S\$, x and y. Subsequently, it resolves the statements, loads the S\$ library and creates a concolic variable: if a concrete value is present, it uses this as starting seed. Otherwise, it will try all primitive types as the first input generation (i.e. string, array, number, object etc). The symbolic part of the concolic wrapper saves all encountered path conditions, which will be used to generate a new input which satisfies another path condition, thereby diverging from the original path, and maybe finding alternative paths.
 By having the assertion \lstinline{x*y > x} we force ExpoSE to create two more paths than it normally would. Without the assertion, there are the two paths \lstinline{x>0} and \lstinline{!x>0}. But with the assertion, we added the path condition \lstinline{(x*y) > x} and its negation. This can be used to test for a certain behaviour, but requires manual modification of the program. Similar to normal conditionals, it also leads to the amount of explorable paths to explode.

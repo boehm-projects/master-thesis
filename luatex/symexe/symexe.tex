@@ -1,0 +1,207 @@
+%! TeX program = luatex
+\documentclass{standalone}
+\usepackage{tikz}
+\usetikzlibrary{
+ backgrounds,
+  shapes.geometric,
+  arrows,
+  decorations,
+  decorations.pathreplacing,
+  fit,
+  positioning,
+  shapes.multipart,
+  calc,
+  trees,
+  graphs,
+  quotes,
+  matrix, 
+  graphdrawing}
+\usepackage{amsmath}
+\usegdlibrary{trees, layered, force}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\definecolor{lmugreen}{HTML}{00883A}
+\definecolor{lmublue}{HTML}{0F1987}
+\definecolor{lmucyan}{HTML}{009FE3}
+\definecolor{lmupurple}{HTML}{8C4091}
+\definecolor{lmured}{HTML}{D71919}
+\definecolor{lmuorange}{HTML}{F18700}
+\definecolor{lmublack}{HTML}{202a30}
+\definecolor{lmugray}{HTML}{626468}
+\definecolor{lmuhalfgray}{HTML}{C0C1C3}
+\definecolor{lmulightgray}{HTML}{E6E6E7}
+\usepackage[edges,linguistics]{forest}
+\usepackage{makecell}
+\usepackage{tabularx}
+\usepackage{multirow}
+\lstset{
+    basicstyle=\footnotesize\ttfamily,
+    lineskip=0pt,
+    basewidth=.5em,
+    breaklines=false,
+    showstringspaces=false,
+    tabsize=2,
+    numbers=left,
+    numbersep=10pt,
+    frame=l,
+    framesep=5pt, % space between frame and text
+    framextopmargin=0,
+    framexbottommargin=0,
+    framerule=0.5pt,
+    xleftmargin=20pt, % indent of frame
+    captionpos=b,
+    escapeinside={(@}{@)},
+    aboveskip=0pt,
+    belowskip=0pt,
+}
+
+\newcommand\symexetable[5]{%
+
+  \begin{tabular}[t]{c | c}\toprule
+    \multicolumn{2}{c}{$#1$}\\\hline
+      $S$ & $C$\\\hline
+      $#2$ & $#4$\\ 
+      $#3$ & $#5$\\
+      \bottomrule
+
+    \end{tabular}%
+}
+
+
+\begin{document}
+\begin{forest}
+forked edges,
+for tree = {
+    rounded corners, 
+    draw=lmugray,
+    fill = blue!18,
+    align=center, 
+    anchor=children,
+    l sep=7mm,
+    fork sep = 4mm
+            },
+  [%root
+  \symexetable{true}{X \rightarrow X}{Y\rightarrow Y}{X:= 1}{Y := 0}
+    [%left
+    \symexetable{\!\begin{aligned}[t]
+        (X\neq Y)
+      \end{aligned} }{X \rightarrow X}{Y \rightarrow Y}{X:= 1}{Y := 0}
+    [% left left
+        \symexetable{\!\begin{aligned}[t]
+        (X\neq Y) \land\\
+        \neg(X+Y+1\neq 0)
+      \end{aligned} }{X \rightarrow X + Y + 1}{Y \rightarrow Y}{X:= -0.75}{Y := -0.25}
+    ] 
+    [%left right
+      \symexetable{\!\begin{aligned}[t]
+      (X\neq Y) \land \\
+      (X+Y+1 \neq 0)
+      \end{aligned} }{X \rightarrow X}{Y \rightarrow Y}{X:= 1}{Y := 0}
+    [%left right left
+        \symexetable{\!\begin{aligned}[t]
+          (X\neq Y) \land\\
+          (X+Y+1\neq 0)\land \\
+          (Y \neq 0)
+        \end{aligned} }{X \rightarrow Y}{Y \rightarrow 0}{X:= 0.5}{Y := 0.25}     
+    ]
+    [%left right right 
+    \symexetable{\!\begin{aligned}[t]
+          (X\neq Y) \land\\
+          (X+Y+1\neq 0)\land \\
+          \neg(Y \neq 0)
+      \end{aligned} }{X \rightarrow Y}{Y \rightarrow Y}{X:= 1}{Y := 0}
+    ] 
+    ]
+  ]
+  [%right
+    \symexetable{\!\begin{aligned}[t]
+      \neg(X\neq Y)
+      \end{aligned} }{X \rightarrow X}{Y \rightarrow Y}{X:= 1}{Y := 1}
+    [%right left
+       \symexetable{\!\begin{aligned}[t]
+      \neg(X\neq Y) \land \\
+      (Y > 8)                   
+      \end{aligned} }{X \rightarrow X}{Y \rightarrow Y+1}{9:= 1}{Y := 9}    
+      [%right left left
+       \symexetable{\!\begin{aligned}[t]
+       \neg (X\neq Y) \land \\
+       (Y > 8) \land \\ 
+       (X+1 \neq 0)
+      \end{aligned} }{X \rightarrow X+1}{Y \rightarrow Y+1}{X:= 9}{Y := 8}
+          [
+            \symexetable{\!\begin{aligned}[t]
+            \neg (X\neq Y) \land \\
+            (Y > 8) \land \\ 
+            (X+1 \neq 0)\land \\ 
+            \neg(Y+1 \neq 0)
+           \end{aligned} }{X \rightarrow X+1}{Y \rightarrow Y+1}{X:= 9}{Y := 9}
+           ]
+           [
+            \symexetable{\!\begin{aligned}[t]
+            \neg (X\neq Y) \land \\
+            (Y > 8) \land \\ 
+            (X+1 \neq 0)\land \\ 
+            \neg(Y+1 \neq 0)
+           \end{aligned} }{X \rightarrow X+1}{Y \rightarrow Y+1}{X:= ?}{Y := ?}, draw=red
+           ]
+     ]
+    [%right left right
+       \symexetable{\!\begin{aligned}[t]
+      \neg(X\neq Y) \land \\
+      (Y > 8)\land \\ 
+      \neg(X+1 \neq 0)
+      \end{aligned} }{X \rightarrow X + 1}{Y \rightarrow Y}{X:= ?}{Y := ?}   ,draw=red 
+    ]      
+    ] 
+    [%right right
+      \symexetable{\!\begin{aligned}[t]
+      \neg(X\neq Y) \land \\
+      \neg(Y > 8)            
+      \end{aligned}  }{X \rightarrow X}{Y \rightarrow Y}{X:= 5}{Y := 5}    
+      [%right right left
+       \symexetable{\!\begin{aligned}[t]
+      \neg(X\neq Y) \land \\
+      \neg(Y > 8)\land \\
+      \neg(X+1 \neq 0)                   
+      \end{aligned} }{X \rightarrow X}{Y \rightarrow Y}{X:= -1}{Y := -1}    
+      ]   
+      [%right right right
+       \symexetable{\!\begin{aligned}[t]
+      \neg(X\neq Y) \land \\ 
+      \neg(Y > 8)\land \\
+      (X+1 \neq 0)                   
+      \end{aligned} }{X \rightarrow X}{Y \rightarrow Y}{X:= 2}{Y := 1}    
+      [%right right right
+       \symexetable{\!\begin{aligned}[t]
+      \neg(X\neq Y) \land \\ 
+      \neg(Y > 8)\land \\
+      (X+1 \neq 0) \land \\                  
+      (Y = 0)
+      \end{aligned} }{X \rightarrow X}{Y \rightarrow Y}{X:= 1}{Y := 0}    
+      ]
+      [%right right right
+       \symexetable{\!\begin{aligned}[t]
+      \neg(X\neq Y) \land \\ 
+      \neg(Y > 8)\land \\
+      (X+1 \neq 0) \land \\ 
+      \neg(Y = 0)
+      \end{aligned} }{X \rightarrow Y}{Y \rightarrow Y}{X:= 2}{Y := 2}    
+      ]
+      ]
+    ]    
+  ]                     
+  ]
+\end{forest}
+\end{document}
+
+
+
+
+
+
+
+
+
+

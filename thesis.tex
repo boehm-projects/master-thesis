@@ -1,23 +1,12 @@
-\documentclass[thesisi,twoside]{plai}
+\documentclass[thesis,twoside]{plai}
 
 \usepackage{tabularx}
 
 \usepackage{lipsum}
-\usepackage{tikz}
-\usetikzlibrary{backgrounds,shapes.geometric,arrows,decorations,decorations.pathreplacing,fit,positioning,shapes.multipart,calc}
-\usepackage{adjustbox}
-
-
-\tikzstyle{class} = [rectangle, draw=black, fill=blue!20, text width=6em, align=center, rounded corners, minimum height=2em]
-\tikzstyle{block} = [draw, rectangle, text width=2cm, text centered, minimum height=1.2cm, node distance=3cm,fill=white]
-
-\tikzstyle{method} = [text width=6em, align=left]
-
-
-
+\usepackage{booktabs}
 \usepackage{graphicx}
-\graphicspath{{images/}}
 \usepackage{svg}
+\graphicspath{{images/}}
 \usepackage{rotating}
 \usepackage{float}
 \usepackage{fancyhdr}
@@ -29,12 +18,26 @@
 \definecolor{light-gray}{gray}{0.80}
 \usepackage{placeins}
 
-\newcommand{\charactercount}[1]{
-\immediate\write18{
-    expr `texcount -1 -sum -merge #1.tex` + `texcount -1 -sum -merge -char #1.tex` - 1 
-    > chars.txt
-}\input{chars.txt}}
-
+\usepackage{tikz}
+\usetikzlibrary{backgrounds,
+  shapes.geometric,
+  arrows,
+  decorations,
+  decorations.pathreplacing,
+  fit,
+  positioning,
+  shapes.multipart,
+  calc,
+  trees,
+  graphs,
+  quotes,
+  matrix }
+\usepackage{adjustbox}
+\tikzstyle{class} = [rectangle, draw=black, fill=blue!20, text width=6em, align=center, rounded corners, minimum height=2em]
+\tikzstyle{block} = [draw, rectangle, text width=2cm, text centered, minimum height=1.2cm, node distance=3cm,fill=white]
+\tikzstyle{method} = [text width=6em, align=left]
+\usepackage{multirow}
+% Define a macro for the box structure
 
 
 
@@ -139,13 +142,11 @@
 % ---------------------------------------------- %
 \chapter{Introduction}
 \label{chapter:introduction}
-
 \input{pages/introduction/introduction}
 
 % ---------------------------------------------- %
 \chapter{Background}
 \label{chapter:background}
-
 \input{pages/introduction/background}
 
 % ---------------------------------------------- %
@@ -157,25 +158,21 @@
 % ---------------------------------------------- %
 \chapter{Express Model}
 \label{chapter:express}
-
 \input{pages/methodology/express}
 
 % ---------------------------------------------- %
 \chapter{Application}
 \label{chapter:application}
-
 \input{pages/methodology/application}
 % ---------------------------------------------- %
 
 \chapter{Evaluation}
 \label{chapter:evaluation}
-
 \input{pages/eval/evaluation}
 
 % ---------------------------------------------- %
 \chapter{Related Work}
 \label{chapter:related-work}
-
 \input{pages/eval/related}
 
 % ---------------------------------------------- %
@@ -185,6 +182,7 @@
 \input{pages/eval/conclusion}
 
 % ---------------------------------------------- %
+
 \bibliographystyle{plainnat}
 \bibliography{bibliography}
 
@@ -196,13 +194,10 @@
 
 % ---------------------------------------------- %
 
-This text contains \charactercount{main} characters.
-
 \microtypesetup{protrusion=false}
 \listoffigures{}
 \listoftables{}
 \microtypesetup{protrusion=true}
 
 \printglossaries
-
 \end{document}

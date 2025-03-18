@@ -1,0 +1,121 @@
+%! TeX program = luatex
+\documentclass{standalone}
+\usepackage{tikz}
+\usetikzlibrary{
+ backgrounds,
+  shapes.geometric,
+  arrows,
+  decorations,
+  decorations.pathreplacing,
+  fit,
+  positioning,
+  shapes.multipart,
+  calc,
+  trees,
+  graphs,
+  quotes,
+  matrix, graphdrawing}
+\usepackage{amsmath}
+\usegdlibrary{trees, layered, force}
+\usepackage{listings}
+
+\lstset{
+    basicstyle=\footnotesize\ttfamily,
+    lineskip=0pt,
+    basewidth=.5em,
+    breaklines=false,
+    showstringspaces=false,
+    tabsize=2,
+    numbers=left,
+    numbersep=10pt,
+    frame=l,
+    framesep=5pt, % space between frame and text
+    framextopmargin=0,
+    framexbottommargin=0,
+    framerule=0.5pt,
+    xleftmargin=20pt, % indent of frame
+    captionpos=b,
+    escapeinside={(@}{@)},
+    aboveskip=0pt,
+    belowskip=0pt,
+}
+%        \node (foo) [] {};
+%        \node (l0) [node, below = of foo, yshift=+0.5cm] {$l_0$};
+%        \node (l1) [node, below = of l0, xshift=-1.5cm] {$l_1$};
+%        \node (l2) [node, below = of l0, xshift=2.5cm] {$l_2$};
+%        \node (l3) [node, below = of l2, xshift=1cm] {$l_3$};
+%        \node (l4) [node, below = of l0, yshift=-3.5cm] {$l_4$};
+%        \node (l5) [node, below = of l4] {$l_5$};
+%        \node (l6) [node, below = of l5, xshift=-1cm] {$l_6$};
+%        \node (l7) [node, below = of l5, yshift=-1.5cm] {$l_7$};
+%
+%        % Arrows
+%        \draw[arrow] (foo)--(l0);
+%        \draw  [arrow](l0) -- (l1) node[midway, left]{{\lstinline|(x !== y)|}};
+%        \draw  [arrow](l0) -- (l2) node[midway, right]{{\lstinline|x === y|}};
+%        \draw  [arrow](l1) -- (l4) node[midway, left] {{\lstinline|x = x + y|}};
+%        \draw  [arrow](l2) -- (l3) node[midway, right]{{\lstinline|y > 8|}};
+%        \draw  [arrow](l3) -- (l4) node[midway, right]{{\lstinline| y = y+1 |}};
+%        \draw  [arrow](l2) -- (l4) node[midway, left]{{\lstinline|!(y > 8)|}};
+%        \draw  [arrow](l4) -- (l5) node[midway, right]{{\lstinline|x=x+1|}};
+%        \draw  [arrow](l5) -- (l6) node[midway, left] {{\lstinline|!(x == 0) && (y !== 0)|}};
+%        \draw  [arrow](l5) -- (l7) node[midway, right]{{\lstinline+(x == 0) || (y == 0)+}};
+%        \draw  [arrow](l6) -- (l7) node[midway, left] {{\lstinline|x = y|}};
+%    \end{tikzpicture}
+ 
+\begin{document}
+\begin{tikzpicture}[node distance=1cm,every node/.style={scale=0.7}]
+        \tikzstyle{node} = [circle,  radius=0.5cm, text centered, draw=black, fill=blue!20]
+
+
+        \tikzstyle{arrow} = [thick, ->, >=stealth]]
+ % \graph[ math nodes, nodes={circle, draw}, tree layout, components go right top aligned]{
+ %   l_0 -> 
+ %   {
+ %     l_2 --{
+ %       l_3,
+ %       l_4
+ %     },
+ %     l_1 [>"\lstinline{x!=y}"]-- 
+ %     l_4 [>"\lstinline{x = x + y}"] -- 
+ %    l_5 -- {
+ %      l_6 -- {
+ %        l_7,
+ %        l_8 -- l_{10},
+ %        l_9 -- l_{10}
+ %      },
+ %   },
+ %  },
+ %  l_7 -- l_{10},
+ % l_3 -- l_4,
+ %  };
+        \node (foo) [] {};
+        \node (l0) [node, below = of foo, yshift=+0.5cm] {$l_0$};
+        \node (l1) [node, below = of l0, xshift=-1.5cm] {$l_1$};
+        \node (l2) [node, below = of l0, xshift=2cm] {$l_2$};
+        \node (l3) [node, below = of l2, xshift=1cm] {$l_3$};
+        \node (l4) [node, below = of l0, yshift=-3.5cm] {$l_4$};
+        \node (l5) [node, below = of l4] {$l_5$};
+        %\node (l6) [node, below = of l5,yshift=-1cm, xshift = 3cm] {$l_6$}
+        \node (l7) [node, below = of l5, xshift=-1cm] {$l_7$};
+        \node (foo2)[below = of l7] {};
+        \node (l9) [node, right = of foo2, xshift=-1cm] {$l_9$};
+        \node (l10)[node, below = of l9 ] {$l_{10}$};
+
+        % Arrows
+        \draw[arrow] (foo)--(l0);
+        \draw  [arrow](l0) -- (l1) node[midway, left]{{\lstinline|(x !== y)|}};
+        \draw  [arrow](l0) -- (l2) node[midway, right]{{\lstinline|(x === y)|}};
+        \draw  [arrow](l1) -- (l4) node[midway, left] {{\lstinline|(x = x + y)|}};
+        \draw  [arrow](l2) -- (l3) node[midway, right]{{\lstinline|(y > 8)|}};
+        \draw  [arrow](l3) -- (l4) node[midway, auto]{{\lstinline|(y = y+1)|}};
+        \draw  [arrow](l2) -- (l4) node[midway, left]{{\lstinline|!(y > 8)|}};
+        \draw  [arrow](l4) -- (l5) node[midway, right]{{\lstinline|(x=x+1)|}};
+        \draw  [arrow](l5) to [out=310,in=00]  node[midway, right] {{\lstinline|(x === 0)|}}(l10);
+        \draw  [arrow](l5) -- (l7) node[midway, left]{{\lstinline|(x !== 0)|}};
+        \draw  [arrow](l7) -- (l10) node[midway, left] {{\lstinline|(y === 0)|}};
+        \draw  [arrow](l7) -- (l9) node[midway, right] {{\lstinline|(y !== 0)|}};
+        \draw  [arrow](l9) -- (l10) node[midway, right] {{\lstinline|(x = y)|}};
+%        \draw  [arrow](l8) -- (l10) node[midway, left] {{\lstinline|(x = y)|}};
+\end{tikzpicture}
+\end{document}
