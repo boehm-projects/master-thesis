@@ -78,10 +78,10 @@ this may indicate that the system is susceptible to script injection, allowing f
 
 %An SQL injection is always then possible, when a server uses the naive method of string concatenation.
 %The query \lstinline{q = "INSERT INTO Students VALUES ('" + FName.Text + "', '" + LName.Text + "')";} is an example for this naive query generation, as any input for FName.Text and LName.Text is taken verbatim, which opens the query database injections. If a malicious attacker used \lstinline{Robert'); DROP TABLE STUDENTS; --) } for FName.Text, the query would execute two statements: \lstinline{INSERT INTO Student Values ('Robert');} and \lstinline{DROP TABLE STUDENTS;}. First, these queries insert the value into the database, and then delete the table.  
-
-\begin{figure}[h]
+%\clearpage
+\begin{figure}[H]
 \centering
-\scalebox{0.7}{%
+\begin{adjustbox}{height=5cm}
 \begin{tikzpicture}[node distance=1cm]
 
 \tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=red!30]
@@ -94,7 +94,7 @@ this may indicate that the system is susceptible to script injection, allowing f
 
 \node (start) [startstop] {Malicious Attacker Client};
 \node (pro1) [process, below = of start] {\lstinline{ <script>alert("Hello")</script>}};
-\node (dec1) [decision, below = of pro1, yshift=-1cm] {Server};
+\node (dec1) [decision, below = of pro1] {Server};
 \node (pro2a) [startstop, below  = of dec1, xshift=-3cm] {Unassuming Client};
 \node (pro2b) [startstop, below  = of dec1, xshift=3cm] {Unassuming Client};
 \node (stopA) [process, below = of pro2a] {Hello};
@@ -107,8 +107,8 @@ this may indicate that the system is susceptible to script injection, allowing f
 \draw [arrow] (dec1) -- node[anchor=west] {distribute message} (pro2b);
 \draw [arrow] (pro2a) -- node[anchor=west] {execute code}(stopA);
 \draw [arrow] (pro2b) -- node[anchor=west] {execute code}(stopB);
-\end{tikzpicture}}
-      
+\end{tikzpicture}
+\end{adjustbox}      
     \caption{An example of a XSS attack. A malicious attacker sends a message to the server that contains a script, which will be distributed to clients. Upon receiving the message, the script will be executed.}
     \label{fig:xss-simp}
 \end{figure}

@@ -63,7 +63,9 @@ We deemed the modelling of the HTTP object out of scope. Therefore, we worked un
 \subsection{Symbolic Addresses and Objects}
 \label{sec:sym-obj}
 While the other limits are specific to our use case, this issue is universal, as pointers can cause a problem on most symbolic execution engines as described by \citet{cha_unleashing_2012}, \citet{coppa_rethinking_2017} and \citet{elkarablieh_precise_2009}, just to name a few. 
-Reasoning about the address of a variable poses an issue, as in theory, DSE would have to assume all possible addresses. As previously mentioned in \autoref{sec:limits}, \citet{cha_unleashing_2012} proposed a symbolic address, which concretizes writes and only the read is a symbolic operation. A similar approach was also taken for ExpoSE, as it concretizes the namespace a variable can occupy, and only its value is resolved symbolically.
+Reasoning about the address of a variable poses an issue, as in theory, DSE would have to assume all possible addresses. 
+As previously mentioned in \autoref{sec:limits}, \citet{cha_unleashing_2012} proposed a symbolic address, which concretizes writes and only the read is a symbolic operation. 
+A similar approach was also taken for ExpoSE, as it concretizes the namespace a variable can occupy, and only its value is resolved symbolically.
 ExpoSE initializes a symbolic object by reserving a namespace, concretizing it.
 
 

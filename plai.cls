@@ -34,6 +34,7 @@
 }
 \DeclareOption{thesis}{%
   \AtBeginDocument{%
+    \renewcommand*{\chapterautorefname}{Chapter}
     \renewcommand*{\sectionautorefname}{Section}
     \renewcommand*{\subsectionautorefname}{Section}
     \renewcommand*{\subsubsectionautorefname}{Section}
@@ -48,7 +49,8 @@
 \let\@semester\relax
 \def\semester#1{\def\@semester{#1}}
 
-
+\newcommand{\nouse}[1]{}
+\newcommand{\ouse}[1]{#1}
 % Set the default class option
 %\ExecuteOptions{seminar}
 
@@ -60,7 +62,7 @@
 \LoadClass[a4paper,11pt, twoside, openright]{report} % Use 'report' for thesis
 
 % Set the page margins
-\RequirePackage[left=30mm,right=30mm,top=30mm,bottom=40mm,binding offset=5mm, showframe]{geometry}
+\RequirePackage[left=30mm,right=30mm,top=30mm,bottom=40mm,binding offset=5mm, \nouse{showframe}]{geometry}
 
 \RequirePackage{libertine}
 \RequirePackage{inconsolata}

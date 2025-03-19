@@ -19,15 +19,26 @@ The client used for this application is bare-bones. All it does is generate a re
 Project B has a total of eight routes, with 4 of them using path parameters.
 It also uses one middleware layer for pre-processing a request, and one layer for post-processing the response. The routing, however, is split into three different routers, which tests our express models capabilities to work with them. In this project, the routes hold the executing functions directly. It has no database, but uses objects to store the data.
 
-
+Before we continue to the tests and their result, we first need to define what relialby in our context means and when this criteria is met by our tests.
+The Oxford Dictionary defines \textit{reliable} as follows:
+\begin{definition}
+Reliable:  Something or Someone .. 
+  \begin{itemize}
+    \item .. that can be trusted to do something well; that you can rely on
+    \item .. that is likely to be correct or true
+  \end{itemize}
+  % TODO cite Oxford Dictionary
+\end{definition}
+\label{sec:def-reliable}
+For our purposes, both of these definitions are applicable, as we required the tests to yield results that were correct and could be trusted, without failure or return results that were verifiably wrong.
 
 \section{Results}
 \label{sec:results}
 
 To validate our underlaying model, we created project A in such a manner that all available methods of adding middleware to the server, of adding routes directly to the server, and of adding a router object to the server were covered. 
 
-
-
+We then split our tests in two categories: the first category is the general test, and the second category are the specific tests whether it is possible to discover security related isues.
+As we defined in \autoref{sec:def-reliable}
 
 
 We will first present our self—developed program, which tests we ran and give the results regarding both our goals. Afterwards, we will do the same with the project we took from GitHub and modified for our purposes.
@@ -63,7 +74,8 @@ While testing these web applications, we encountered multiple peculiarities, whi
 
 \subsubsection{String Replace}
 When we implemented a route that was to simulate a request in which the input was sanitized and every special character got replaced by its associated HTML escape character, we discovered that the string method “replace” reduced the execution speed to a crawl, due to its implementation as a recursive call.
-While this is not an issue with concrete values, it caused the path condition to grow excessively for symbolic expressions. Before the operating system decided to halt the process, we reached as high as half a terabyte of written memory before the process stopped.
+While this is not an issue with concrete values, it caused the path condition to grow excessively for symbolic expressions. Before the operating system decided to halt the process, we reached as high as half a terabyte of written memory before the process stopped. For testing puroses we only allowed two
+characters to be sanitized \textit{\textless} and \textit{\textgreater}, and limited the length of the input string. 
 
 
 \subsubsection{Implicit Conditionals}
@@ -71,11 +83,7 @@ Another issue is the use of implicit conditionals, such as re.Match, which check
 If re.Match is used, an explicit check has to follow; otherwise no path is created. 
 This means, for optimal test coverage, it is imperative to write conditionals explicitly. 
 
-\subsubsection{Type coercion}
-Finally, due to JavaScript's dynamically typed nature, a symbolic input can cover 
 
 
 \section{Discussion}
-Now, coming back to the initial research questions. What's the verdict? 
-
 Testing a web application with ExpoSE, with Dynamic Symbolic Execution, gave a direct answer to both questions. As presented in \autoref{sec:results}, we managed to test multiple web applications successfully with our express model 
