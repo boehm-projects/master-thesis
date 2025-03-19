@@ -66,17 +66,18 @@ To generate the request, the server was required to instantiate the client. Now 
 
     \end{tikzpicture}
     \end{adjustbox}
-    \caption{Express model structure}
+    \caption{The express model structure.}
     \label{fig:express-struc}
 \end{figure}
 
 
 \subsection{Routing} 
 \label{sec:routing}
-Being the most vital component of any server, routing must be planned accordingly to enable all the features offered by Express.js, while removing those intended for handling a genuine HTTP request. This implies that the model must mimic how Express builds its internal routing stack, handles any incoming request, and manipulates the response.\\
-There are two methods to add a route to the server:\\ 
-The first method is to add it directly to the server via one of the 5 HTTP methods (listed in \autoref{tab:rest_http_methods}), which takes the provided URL pattern, the callback function and its HTTP Method and places it in the array.\\
-The second method is to create a separate router object, which also offers the available HTTP methods. The idea for this is, that it is possible to extract the routing logic from the core server. This provides the possibility to restrict access to, add, and remove entire sections from the server without the necessity to modify the base server.\\
+Being the most vital component of any server, routing must be planned accordingly to enable all the features offered by Express.js, while removing those intended for handling a genuine HTTP request. This implies that the model must mimic how Express builds its internal routing stack, handles any incoming request, and manipulates the response. There are two methods to add a route to the server:
+
+The first method is to add it directly to the server via one of the 5 HTTP methods (listed in \autoref{tab:rest_http_methods}), which takes the provided URL pattern, the callback function and its HTTP Method and places it in the array.
+
+The second method is to create a separate router object, which also offers the available HTTP methods. The idea for this is, that it is possible to extract the routing logic from the core server. This provides the possibility to restrict access to, add, and remove entire sections from the server without the necessity to modify the base server.
 
 This router object then is attached in the server to a base route, most commonly in  simple server under the base route “/”, finalizing the route by which the resource can be reached. All routes are subsequently added into the array. The array creation is then handled by a “use” function (\autoref{fig:express-struc} top left), which takes as many parameters as needed, which results in the following 3 cases:
 \begin{itemize}
@@ -105,7 +106,7 @@ This yields an array of object containing the routes and middleware layers as de
             route: {
                 path: '/user/:id',
                 methods: [GET],
-                parameters: [get: "id"],
+                parameters: [GET: "id"],
                 GET: [Function (anonymous)]
             },
             path: /^\/user\/(\d{1,4})$/,
@@ -131,30 +132,60 @@ This yields an array of object containing the routes and middleware layers as de
         }
     ]
 	\end{lstlisting}
-	\caption{Routing stack created by the express model. }
+	\caption{The routing stack created by the express model.}
 	\label{fig:stack-example}
 \end{figure}
-
-
-
 The array comprises not only of routes, but also all middleware that is associated with the server, responsible for pre- and post-processing any request. Common middleware would include, for instance, an authorizer middleware, which verifies whether the client has the authorization to request the resource, or a logger for writing events to an output with the purpose of tracing requests.
 Express.js requires that the middleware layers that preprocess the request and response be placed first, and any post-processing middleware be placed last, as the processing of the array is queue-like, first in first out. This is done by ordering the execution statements in the same order.
-
-Each layer object consists of four fiels: method, path, handle and route.\\
+Each layer object consists of four fields: method, path, handle and route.\\
 The field \textit{method} has two distinct usecases. The first is signifying that it is a middleware layer, by containing the keyword "use", which will be executed no matter the request.
 The second usecase is to hold the information which HTTP method it expects. \\
 The field \textit{path} holds the URL pattern, which a request has to match in order for it to be processed. Should a request match the path, a flag is set that it has been matched and the model will no longer try to find a matching route. A middleware layer will always be attached to the basepath "/"\\
 The field \textit{handle} contains the callback function.\\
 The field \textit{route} contains all information regarding the routing layer, such as path parameters, the callback function and the HTTP methods. A middleware layer does not have such information, thus it is always null.
-
-
-
-
 \subsection{Request Handling}
 \label{sec:req-handling}
 The approach to request handling is designed to replicate the method employed by Express for handling requests. This is accomplished by iterating over the stack, utilizing all middleware layers to preprocess the request, and subsequently attempting to match the request URL with an existing route pattern within the stack. When a match is identified, the request is processed, and a response is generated by invoking the callback function stored in the handle field of the corresponding routing object.
 
 To ensure the correct functioning of this process, it is imperative that the base route, “/” is added last in the stack. This arrangement allows for the appropriate handling of all preceding routes. Additionally, a flag is established to indicate that the request has been processed, thereby preventing any possibility of matching a second route inadvertently. Finally, any post-processing middleware is applied prior to the transmission of the response to the client.
+
+\begin{algorithm}[H]
+\caption{Process incoming request - HandleStack}
+\KwData{$this.stack$}
+\KwIn{$request$, $response$}
+\If{$request.url$ is undefined \textbf{or} $request.method$ is not in $HttpMethods$}{
+\tcp{Return error response}
+response $\gets$ error\;
+\Return response\;
+}
+foundCorrectPath $\gets$ false\;
+\For{each $middleWare$ in $this.stack$}{
+    \tcp{Execute pre- or postprocessing layer}
+    \If{$middleWare.method$ is ``use''}{
+        Call $middleWare.handle(request, response)$\;
+        \Continue
+    }
+    \Else {
+        \tcp{Found a route that matches the request}
+        \If{$middleWare.method$ equals $request.method$ \textbf{and} foundCorrectPath is false}{
+            \If{$middleWare.path$ matches $request.url$}{
+                foundCorrectPath $\gets$ true\;
+                Call \texttt{processMiddleWare(middleWare, request, response)}\; 
+                \Continue
+            }
+            \Else{
+                \Continue
+        }
+        }
+        
+    }
+}
+\If{foundCorrectPath is false}{
+response $\gets$ error\;
+\Return response\;
+}
+\Return response\;
+\end{algorithm}
 
 
 \subsection{Parametrized Routing}
@@ -163,11 +194,11 @@ To ensure the correct functioning of this process, it is imperative that the bas
 It is noteworthy that the extraction of parameters sent as route variables must remain symbolic. For instance, when the route is defined as seen in \autoref{fig:param-route}, the request path might look like \lstinline[language=JavaScript, gobble=4]{var path = S$.symbol("path", "/user/1");}.
 
 
-\begin{figure}[ht]
+\begin{figure}[H]
     \begin{lstlisting}[language=JavaScript, gobble=4]
     router.get('/user/:id', callback) 
     \end{lstlisting}
-    \caption{Parameterized route}
+    \caption{A parameterized route.}
     \label{fig:param-route}
 \end{figure}
 
@@ -180,12 +211,23 @@ It is noteworthy that the extraction of parameters sent as route variables must 
         }
     }
     \end{lstlisting}
-    \caption{Parameters extracted from the request path}
+    \caption{Parameters extracted from the request path.}
     \label{fig:param-extracted}
 \end{figure}
-As illustrated in \autoref{fig:stack-example}, the second layer from the top introduces a “parameters” field, which contains an object representing the parameter variable name, specifically “id”. During the processing of a request, this parameter is extracted from the path, resulting in an object that is subsequently attached to the request, as depicted in \autoref{fig:param-extracted}.
+As illustrated in the second layer from the top in \autoref{fig:stack-example}, the  introduces a “parameters” field, which contains an object representing the parameter variable name, specifically “id”. During the processing of a request, this parameter is extracted from the path, resulting in an object that is subsequently attached to the request, as depicted in \autoref{fig:param-extracted}.
 The significant aspect of this process is that the parameter remains a concolic variable, thereby preserving its symbolic characteristics. Therefore, it becomes possible to generate additional path conditions as the request parameters interact with conditionals, facilitating the creation of corresponding inputs.
 
+\begin{algorithm}[ht]
+\caption{ProcessMiddleWare}
+\KwIn{$middleWare$, $request$, $response$}
+\tcp{Associate path paramters with their corresponding field names}
+values $\gets$ match of $request.url$ with $middleWare.path$ excluding first element\;
+\For{each (key, index) in $middleWare.route.params[middleWare.method]$}{
+    $request.params[key] \gets values[index]$\;
+}
+\tcp{Invoke callback stored in middleWare}
+Call $middleWare.handle(request, response)$\;
+\end{algorithm}
 
 
 

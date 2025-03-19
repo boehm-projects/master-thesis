@@ -9,7 +9,7 @@ As testing a web application for security issues depends on ExpoSE being able to
 To evaluate whether we achieved the first goal with our express model, we use the existing test framework of ExpoSE. With the slight modification of instead of running the various test files, we used it to run our test server multiple times in parallel, trying to verify that ExpoSE generates inputs that consistently find all available routes and branches within.
 
 
-For the purpose of testing our model and the capabilities of ExpoSE regarding its applicability to web applications, we first developed one web application ourselves, we will call it project A, and to verify its compatibility with real-world projects, we took an existing GitHub project \footnote{https://github.com/rwieruch/node-express-server-rest-api}, that worked within the limits of ExpoSE stated in \autoref{sec:limits}. This means, it was written with the syntax available in ES6 and could easily be stripped of external packages. In this case, the only external package was the CORS package, used for cross-origin resource sharing. And it did not rely on any external database. Hence, it was the perfect example project for our needs. Besides removing the package, we modified the project for use with ExpoSE as presented in \autoref{sec:nec-mods}. This is our project B.
+For the purpose of testing our model and the capabilities of ExpoSE regarding its applicability to web applications, we first developed one web application ourselves, we will call it project A, and to verify its compatibility with real-world projects, we took an existing GitHub project\footnote{https://github.com/rwieruch/node-express-server-rest-api}, that worked within the limits of ExpoSE stated in \autoref{sec:limits}. This means, it was written with the syntax available in ES6 and could easily be stripped of external packages. In this case, the only external package was the CORS package, used for cross-origin resource sharing. And it did not rely on any external database. Hence, it was the perfect example project for our needs. Besides removing the package, we modified the project for use with ExpoSE as presented in \autoref{sec:nec-mods}. This is our project B.
 We do not force ExpoSE to generate an input by giving assertions about the form and content of the data, to keep the discovery of paths to the framework. This is to ensure that the normal program flow happens, thus representing a normal execution. 
 
 Project A has a total of five routes, one for each CRUD operation, with one extra GET having a parameterized path.
@@ -17,16 +17,30 @@ It uses one middleware layer for pre-processing a request, and one layer for pos
 The client used for this application is bare-bones. All it does is generate a request and receive a response, comparing the input with the output. The client is also the only place which holds a reference to the symbolic execution interface S\$.
 
 Project B has a total of eight routes, with 4 of them using path parameters.
-It also uses one middleware layer for pre-processing a request, and one layer for post-processing the response. The routing, however, is split into three different routers, which tests our express models capabilities to work with them. In this project, the routes hold the executing functions directly. It has no database, but uses an object to store the data. 
+It also uses one middleware layer for pre-processing a request, and one layer for post-processing the response. The routing, however, is split into three different routers, which tests our express models capabilities to work with them. In this project, the routes hold the executing functions directly. It has no database, but uses objects to store the data.
 
 
 
 \section{Results}
 \label{sec:results}
-Foremost: Testing a web application using DSE already provides the benefit of finding unhandled errors, such as missing undefined checks, empty request bodies etc. 
-This can already benefit the development of a program, catching issues earlier, and therefore avoiding publishing erroneous code.
+
+To validate our underlaying model, we created project A in such a manner that all available methods of adding middleware to the server, of adding routes directly to the server, and of adding a router object to the server were covered. 
 
 
+
+
+
+We will first present our self—developed program, which tests we ran and give the results regarding both our goals. Afterwards, we will do the same with the project we took from GitHub and modified for our purposes.
+
+
+
+\subsection{Project A}
+
+
+
+
+
+\subsection{Project B}
 
 \begin{itemize}
     \item Self developed program
@@ -45,13 +59,20 @@ This can already benefit the development of a program, catching issues earlier, 
 
 \subsection{Peculiarities}
 \label{sec:peculiarities}
-Specific features of the implementation due to the peculiarities of dynamic symbolic execution.
+While testing these web applications, we encountered multiple peculiarities, which should be considered when developing a program that is testable with ExpoSE.
 
-Recursion creates a heavy load on the system, making it unfeasible for any real-world application. 
+\subsubsection{String Replace}
+When we implemented a route that was to simulate a request in which the input was sanitized and every special character got replaced by its associated HTML escape character, we discovered that the string method “replace” reduced the execution speed to a crawl, due to its implementation as a recursive call.
+While this is not an issue with concrete values, it caused the path condition to grow excessively for symbolic expressions. Before the operating system decided to halt the process, we reached as high as half a terabyte of written memory before the process stopped.
 
-Another issue is the use of implicit conditionals, such as re.Match, which does check whether a string matches a regular expression, but is also fine with no match at all, as it returns an array. If re.Match is used, an explicit check has to follow; otherwise no path is created. 
 
+\subsubsection{Implicit Conditionals}
+Another issue is the use of implicit conditionals, such as re.Match, which checks whether a string matches a regular expression. But unlike re.Test, which returns a boolean, re.Match returns an array, which can be empty if the tested string does not match the regular expression. 
+If re.Match is used, an explicit check has to follow; otherwise no path is created. 
+This means, for optimal test coverage, it is imperative to write conditionals explicitly. 
 
+\subsubsection{Type coercion}
+Finally, due to JavaScript's dynamically typed nature, a symbolic input can cover 
 
 
 \section{Discussion}

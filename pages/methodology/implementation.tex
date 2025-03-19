@@ -13,8 +13,8 @@ For our case, the program under test is not just one script, but consists of bot
 
 \begin{figure}
   \centering
-\includegraphics{exposeArchitectureDiagram.pdf}
- \caption{Express model structure, as depicted in \cite{loring_practical_2021}, modified to include the web application with the models for express, request and response}
+\includegraphics[width=0.7\textwidth]{exposeArchitectureDiagram.pdf}
+ \caption{Express model structure, as depicted in \cite{loring_practical_2021}, modified to include the web application with the models for express, request, and response.}
      \label{fig:expose-struc}
 \end{figure}
 
@@ -49,7 +49,7 @@ This is a significant limitation, as it implies that we are unable to utilize an
 
 \subsection{HTTP Protocol}
 \label{sec:httpprot}
-Another limit imposed on us was the communication between client and server, as typically, this would happen using HTTP. However, this would mean that we would lose the symbolic state of the program, as the transfer would occur as a byte stream with all data first transformed into a string representation. 
+Another limitation we faced was the communication between client and server, as typically, this would happen using HTTP. However, this would mean that we would lose the symbolic state of the program, as the transfer would occur as a byte stream with all data first transformed into a string representation. 
 A string, however, cannot be of symbolic type. \\
 This means, we had two options:\\
 Option A would require us to model the complete HTTP object, with all its bells and whistles, and then include the symbolic state of the program, all while complying with the HTTP standard. This way, we could also test HTTP, and whether the JavaScript implementation works as intended.
@@ -60,9 +60,40 @@ Option B is to bypass the transmission of data entirely, by injecting the server
 We deemed the modelling of the HTTP object out of scope. Therefore, we worked under the assumption, that HTTP works as intended and went for option B, as that meant, we could focus on the actual web application, and could test it in isolation.
 
 
-\subsection{Symbolic Objects}
+\subsection{Symbolic Addresses and Objects}
 \label{sec:sym-obj}
-While the other limits are specific to our use case, this issue is an universal one, as pointers can cause a problem on most symbolic execution engines as described by \citet{cha_unleashing_2012}, \citet{coppa_rethinking_2017} and \citet{elkarablieh_precise_2009}, just to name a few. The biggest culprits in javascript are symbolic objects, as they themselves have a pointer to a memory address, which holds the references for both parts of the key value pair, with the contents of these parts being pointers to another memory address. This poses a problem for discerning what the keys and the values should be, where they are stored and how they are accessed. A purely symbolic object therefore is unfeasible and should be avoided. However, a concrete object may hold symbolic values.
+While the other limits are specific to our use case, this issue is universal, as pointers can cause a problem on most symbolic execution engines as described by \citet{cha_unleashing_2012}, \citet{coppa_rethinking_2017} and \citet{elkarablieh_precise_2009}, just to name a few. 
+Reasoning about the address of a variable poses an issue, as in theory, DSE would have to assume all possible addresses. As previously mentioned in \autoref{sec:limits}, \citet{cha_unleashing_2012} proposed a symbolic address, which concretizes writes and only the read is a symbolic operation. A similar approach was also taken for ExpoSE, as it concretizes the namespace a variable can occupy, and only its value is resolved symbolically.
+ExpoSE initializes a symbolic object by reserving a namespace, concretizing it.
+
+
+On execution, it then tracks every property access, updating the initial object with a new symbolic variable for the accessed property. 
+If we consider this expression:\\
+\lstinline[language=JavaScript, gobble=4, escapechar=@]{const object = S$.symbol("object");}
+This instruction initilizes the variable object as a new symbolic variable, without any indication that it is an object. 
+Should ExpoSE now encounter a property access, i.e.
+\lstinline[language=JavaScript, gobble=4, escapechar=@]{if(object.field === "value")},
+the property \lstinline{object.field} gets initilized as a new symbolic variable
+\lstinline[language=JavaScript, gobble=4, escapechar=@]{object.field = S$.symbol("field");} 
+and a path condition gets added, that \lstinline{object} is, in fact, an object.\cite{loring_systematic_2021}
+
+While this works in theory, it is incredibly costly, leading to an explosion of paths, due to the dynamically typed nature of JavaScript, thus adding one path condition per type just on encountering a property access. On black-box testing, where the program has no other option for reasoning what, using completely symbolic objects does increase coverage and helps to find bugs.
+In our case, however, where we have full access to the code and where we have knowledge of all input fields, this can be avoided, by creating an object with possible properties already symbolically initialized. This can be done because all unused fields are simply ignored and not adding new path conditions. 
+This means, instead of waiting for ExpoSE to find \lstinline{object.field}, we start with an object already containing the field, together with a seed indicating the type, as can be seen in \autoref{lst:sym-obj}.
+\begin{minipage}{\linewidth}
+    \begin{lstlisting}[language=JavaScript, gobble=4, escapechar=@]
+        const object = {
+            "field": S$.symbol("field", "string"),
+            "numberfield"; S$.symbol("numberfield", 10),
+    };
+\end{lstlisting}
+\captionof{lstlisting}{Concrete object together with symbolic fields initilized.}
+\label{lst:sym-obj}
+\end{minipage}
+
+
+
+
 
 \subsection{External Packages}
 \label{sec:externalpack}

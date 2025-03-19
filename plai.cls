@@ -56,14 +56,11 @@
 \ProcessOptions\relax
 
 % Define the document class based on the selected option
-\ifx\@seminar\@undefined
-  \LoadClass[a4paper,11pt]{report} % Use 'report' for thesis
-\else
-  \LoadClass[a4paper,11pt]{article} % Use 'article' for seminar
-\fi
+
+\LoadClass[a4paper,11pt, twoside, openright]{report} % Use 'report' for thesis
 
 % Set the page margins
-\RequirePackage[inner=40mm,outer=30mm,top=30mm,bottom=40mm]{geometry}
+\RequirePackage[left=30mm,right=30mm,top=30mm,bottom=40mm,binding offset=5mm, showframe]{geometry}
 
 \RequirePackage{libertine}
 \RequirePackage{inconsolata}

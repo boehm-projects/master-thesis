@@ -1,32 +1,28 @@
-Testing of web applications for possible security breaches can be done in multiple ways. Most of them require extensive explicit writing of test cases, trying to catch all edge cases and hoping they would reveal all potential threats. 
-
-As the title of this thesis states, we used the dynamic symbolic execution (DSE) framework ExpoSE, created for and described in \citet{loring_expose_2017}
-
 
 \section{Motivation}
 \label{sec:motivation}
 
-Whenever we write code, we at some point have to test it. In ideal circumstances, we test while development, as should we not, we might be in for an unpleasant surprise. Bill Gates once said:
+Whenever we write code, testing is an essential process that cannot be overlooked. Ideally, testing occurs concurrently with development; failing to do so can lead to unpleasant surprises later on. Bill Gates once remarked, 
 \begin{quote}
 
     “… we have as many testers as we have developers. And testers spend all their time testing, and developers spend half their time testing. We're more of a testing, a quality software organization than we're a software organization.” — Bill Gates in an interview for InformationWeek \cite{bill_q_2002} 
 \end{quote}
-This shows, that testing is not just an often overlooked, annoying, side effect of developing software, it actually may even more important than writing the code itself.
-Automating this costly testing process, therefore, is a highly coveted question, which many approaches have tried to give an answer to. 
-Recently, the use of Dynamic Symbolic Execution has been adopted as an approach for automating and generating test coverage, to uncover software bugs and malicious openings, and a many frameworks for DSE testing have been developed, each with its limitations and solutions.
-ExpoSE is such a framework to test software.\\
-\cite{jhala_software_2009}
-The severity of bugs and malicious openings depend on the kind of program and its execution circumstances: is it an offline program, just running without any outside connection, is it a program for Internet of Things (IoT), connecting hardware with the internet, like a smart thermostat, or is it a web application, holding private information, distributing data all over the world?
-All of these programs can include security issues, and to find these, programs are tested extensively. 
 
-In this thesis, we want to apply Dynamic Symbolic Execution by using ExpoSE as a framework, to test web applications. For this, we try to answer the following research questions.
+This statement underscores the critical role of testing in software development—an endeavour that can be even more important than writing the code itself.
+
+The severity of bugs and vulnerabilities varies significantly based on the application's nature and context. For instance, an offline program has different security considerations than an Internet of Things (IoT) application, such as a smart thermostat, or a web application handling sensitive data globally. Each of these programs can harbour security issues, necessitating extensive testing to identify potential flaws. As software becomes increasingly complex, catching all bugs becomes increasingly challenging. Consequently, automating this time-consuming testing process is a highly sought-after goal, leading to numerous approaches aimed at achieving it.
+
+Dynamic Symbolic Execution (DSE) is one such approach that has gained traction for automating test coverage and uncovering software bugs and vulnerabilities. While DSE can be traced back to the early 1970s, with foundational work by \citet{boyer_selectformal_1975} and \citet{king_new_1975}, it has recently experienced a resurgence. Numerous frameworks for DSE have been developed, each with its advantages and limitations. Among them, ExpoSE, as described in \citet{loring_expose_2017}, stands out for its strength in string manipulation and reasoning—critical features when testing web applications, where data is predominantly transmitted in text-based formats.
 
 
 \section{Research questions}
 \label{sec:research-questions}
 
+This thesis aims to apply \gls{dse} using the ExpoSE framework to test web applications and to answer the following research questions:
 
 RQ1: Is it possible to reliably end-to-end fuzz test a web application using Dynamic Symbolic Execution in ExpoSE?\\
 RQ2: Can it be used to reliably find security issues?
 
-RQ2 is directly dependent on the outcome of RQ1, as should the answer to it be a definite and resound “NO”, then there is no reason in trying to answer RQ2. A test that cannot be used to test a web application in general cannot be used for security issues. If, however, it is indeed possible, then we can go ahead to see whether ExpoSE can be used for discovering security related issues and bugs. worng
+Given that RQ2 is contingent on the findings of RQ1, if the answer to RQ1 is a definitive “NO”, then further investigation into RQ2 becomes unnecessary. A testing methodology that fails to assess a web application's general functionality cannot effectively be used to discover specific security vulnerabilities. Conversely, if RQ1 yields a positive result, we will explore whether ExpoSE can effectively uncover security-related issues and bugs.
+
+In this thesis, special attention will be given to vulnerabilities such as Cross-Site Scripting (XSS), which is a prevalent issue in web applications. XSS attacks can allow malicious actors to execute scripts in the context of a user's browser, potentially leading to unauthorized actions, data theft, and other security concerns. Given ExpoSE's robust support for string operations, we believe it is well-suited to identify such string-based attacks.

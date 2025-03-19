@@ -12,3 +12,6 @@ DART  \cite{godefroid_random_2007}\\
 
 Recently, DSE became a staple for testing projects for edge cases and loopholes. 
 This generated progress in how and when DSE can be used. 
+
+Tackling the path explosion of symbolic execution is a  major part of the recent research.
+\citet{ryan_countering_nodate} try to alleviate this by introducing piece-wise composition, which passes the problem to the SMT solver as chunked independent trees of the complete execution tree, reducing the cost on the dynamic symbolic execution.

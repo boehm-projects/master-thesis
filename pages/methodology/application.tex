@@ -38,8 +38,8 @@ This approach allows for the generalization of a single test without necessitati
 as any fields not utilized by the specific route are ignored.
 
 Once the client is either modified or created to produce a symbolic request, 
-a singular execution of ExpoSE suffices to generate diverse requests that effectively cover all
-possible paths of a request and trigger all potential unique responses.
+a singular execution of ExpoSE should suffice to generate diverse requests that effectively cover all
+possible paths a request and trigger all potential unique responsesm, as long as it is a distinct and reachable path.
 
 
 
@@ -76,6 +76,8 @@ However, obvious vulnerabilities can be detected through a comparative analysis 
 If the input and output remain unchanged, especially when containing special characters like “\textless” or “/”,
 this may indicate that the system is susceptible to script injection, allowing for the execution of code on a different machine.
 
+%An SQL injection is always then possible, when a server uses the naive method of string concatenation.
+%The query \lstinline{q = "INSERT INTO Students VALUES ('" + FName.Text + "', '" + LName.Text + "')";} is an example for this naive query generation, as any input for FName.Text and LName.Text is taken verbatim, which opens the query database injections. If a malicious attacker used \lstinline{Robert'); DROP TABLE STUDENTS; --) } for FName.Text, the query would execute two statements: \lstinline{INSERT INTO Student Values ('Robert');} and \lstinline{DROP TABLE STUDENTS;}. First, these queries insert the value into the database, and then delete the table.  
 
 \begin{figure}[h]
 \centering

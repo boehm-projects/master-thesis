@@ -1,10 +1,11 @@
-\documentclass[thesis,twoside]{plai}
+\documentclass[thesis]{plai}
 
 \usepackage{tabularx}
 
 \usepackage{lipsum}
 \usepackage{booktabs}
 \usepackage{graphicx}
+\usepackage{tabularx}
 \usepackage{svg}
 \graphicspath{{images/}}
 \usepackage{rotating}
@@ -12,12 +13,14 @@
 \usepackage{fancyhdr}
 \setlength{\headheight}{13.6pt}
 \addtolength{\topmargin}{-1.6pt}
-
 \usepackage{microtype}
 \usepackage{color}
 \definecolor{light-gray}{gray}{0.80}
 \usepackage{placeins}
-
+\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+\SetKw{Continue}{continue}
+\newcommand\mycommfont[1]{\footnotesize\ttfamily\textcolor{blue}{#1}}
+\SetCommentSty{mycommfont}
 \usepackage{tikz}
 \usetikzlibrary{backgrounds,
   shapes.geometric,
@@ -37,9 +40,8 @@
 \tikzstyle{block} = [draw, rectangle, text width=2cm, text centered, minimum height=1.2cm, node distance=3cm,fill=white]
 \tikzstyle{method} = [text width=6em, align=left]
 \usepackage{multirow}
-% Define a macro for the box structure
-
-
+\newcommand{\specialcell}[2][c]{%
+  \begin{tabular}[#1]{@{}l@{}}#2\end{tabular}}
 
 \usepackage{enumitem}
 \usepackage{glossaries}
@@ -138,7 +140,7 @@
 \fancyhf{}
 \fancyhead[R]{\thepage}
 \renewcommand{\headrulewidth}{0pt}
-
+\raggedbottom
 % ---------------------------------------------- %
 \chapter{Introduction}
 \label{chapter:introduction}
@@ -197,6 +199,7 @@
 \microtypesetup{protrusion=false}
 \listoffigures{}
 \listoftables{}
+\listofalgorithms
 \microtypesetup{protrusion=true}
 
 \printglossaries
