@@ -1,6 +1,6 @@
 To address the research questions posed in~\autoref{sec:research-questions}, it is imperative to first comprehend the subjects and their fundamentals. 
 
-We start by defining the terminology, giving an overview of the topic areas, and explaining their theory touched upon by this thesis in~\autoref{sec:defs}. Afterwards, we cover the technologies used within the tool ExpoSE in~\autoref{sec:defs}.
+We start by defining the terminology, giving an overview of the topic areas, and explaining their theory touched upon by this thesis in~\autoref{sec:defs}. Afterwards, we cover the technologies used within the tool ExpoSE in~\autoref{sec:tech}.
 
 \section{Terminology and Theory}
 \label{sec:defs}
@@ -66,7 +66,7 @@ This adherence ensures that the server and client can operate independently, mea
         OPTIONS               & Return available HTTP methods           & Yes                 \\
         DELETE                & Remove a resource                       & Yes                 \\ \bottomrule
     \end{tabular}
-    \caption{Summary of REST HTTP Methods and their idempotence \cite[chapter 9]{fielding_http_2022}}
+    \caption[List of HTTP Methods]{Summary of REST HTTP Methods and their idempotence \cite[chapter 9]{fielding_http_2022}}
     \label{tab:rest_http_methods}
 \end{table}
 \FloatBarrier
@@ -208,10 +208,10 @@ In this subsection, we will demonstrate the concept of DSE by employing the code
 To facilitate the process, we can first depict the program as a Control Flow Graph (\gls{cfg}) \autoref{fig:example-program-graph}. 
 The CFG displays the conditions and transformations along its edges, with the vertices signifying the state of the program.
 On entering  the program, we assume that the initial value of x=1 and y=0, just to tell the DSE Engine the types of the variables, and to give a starting point. 
-
+\capstartfalse
 \begin{center}
     We can denote this as a tuple of (pc, S(x), C(x)) 
-    \begin{table}[h]
+    \begin{table}[ht]
         \begin{tabular}{lll}
             where & pc & the path condition \\
              & $S(x) \rightarrow X$& \specialcell[c]{the symbolic state of X,\\ i.e. the applied transformations on the initial value}\\
@@ -219,7 +219,7 @@ On entering  the program, we assume that the initial value of x=1 and y=0, just 
         \end{tabular}
     \end{table}
 \end{center} 
-
+\capstarttrue
 \vspace{0.5cm}
 
 \begin{tabular*}{\textwidth}{@{}c|c@{}}
@@ -279,7 +279,7 @@ We can now construct the symbolic execution tree displayed in \autoref{fig:symbo
 \begin{sidewaysfigure}[h]
   \centering
   \includegraphics[width=\textwidth]{../luatex/symexe/out/symexe.pdf}    
-  \caption{Symbolic execution tree of \autoref{lst:example-program} , displaying the path condition and the concolic state. Unreachable paths are highlighted in red.}
+  \caption[Symbolic execution tree]{Symbolic execution tree of \autoref{lst:example-program}, displaying the path condition and the concolic state. Unreachable paths are highlighted in red.}
   \label{fig:symbolic-execution-tree}
 \end{sidewaysfigure}
 
@@ -313,8 +313,12 @@ It also is not suitable for full boundary testing, as DSE checks for reachabilit
 \FloatBarrier
 \subsection{SMT Solver}
 \label{sec:smtsolver}
-Deciding whether a logical expression is, depending on the expression, a difficult process.
-If we take the simple expression $a = b \land b= c\land c = d \land d \neq e \land e = a$, we can check the satisfiability. From $a = b$, we deduce that $a$ and $b$ must have the same value. Since $b = c$, it follows that $c$ is equal to $a$ and $b$. By continuing this pattern, we see that $d$ must also equal $a$, $b$, and $c$. However, the expression $d \neq e$ states that $d$ cannot equal $e$. Since $e = a$, this places $e$ back in the equality chain, leading to a contradiction: $d$ must equal $e$ (since $e = a = b = c = d$), which conflicts with $d \neq e$.
+Deciding whether a logical expression is satisfiable, depending on the expression, a difficult process.
+If we take the simple expression $a = b \land b= c\land c = d \land d \neq e \land e = a$, we can check the satisfiability.
+From $a = b$, we deduce that $a$ and $b$ must have the same value. 
+Since $b = c$, it follows that $c$ is equal to $a$ and $b$. 
+By continuing this pattern, we see that $d$ must also equal $a$, $b$, and $c$. 
+However, the expression $d \neq e$ states that $d$ cannot equal $e$. Since $e = a$, this places $e$ back in the equality chain, leading to a contradiction: $d$ must equal $e$ (since $e = a = b = c = d$), which conflicts with $d \neq e$.
 
 Automating this process of checking for satisfiability is done by a \textit{Boolean Satisfiability Theories} (\gls{sat}) Solver, first introduced by  \citet{davis_computing_1960} as the Davis-Putnam algorithm, enhanced by adding backtracking, developed by \citet{davis_machine_1962}, formerly known as the Davis, Logemann and Loveland Algorithm or DLL, and nowadays usually found as Davis-Putnam-Logemann-Loveland (DPLL)-Algorithm. 
 
@@ -389,7 +393,7 @@ Although the functions exhibit variation in their parameters, they always includ
 
 
     \end{lstlisting}
-    \caption{A shortened program snippet from \autoref{fig:expose-sample-program}, instrumented by \texttt{JALANGI2}, with explanation}
+    \caption[Instrumented code snippet]{A shortened program snippet from \autoref{fig:expose-sample-program}, instrumented by \texttt{JALANGI2}, with explanation}
     \label{fig:code-snippet}
 \end{figure}
 \newpage
@@ -431,7 +435,7 @@ This example, of course, is almost as simple as it can get. This is because Java
 		{\lstinline|J\$.endExecution|} & terminating execution                                 &\lstinline| endExecution                |            \\
 		{\lstinline|J\$.S           |} & with statement                                        &\lstinline| runInstrumentedFunctionBody |            \\
 	\end{tabular}}
-	\caption{Jalangi2  functions, their descriptions, and their callbacks as stated in the JavaScript Documentation of the analyser}
+	\caption[List of Jalangi2 functions]{Jalangi2  functions, their descriptions, and their callbacks as stated in the JavaScript Documentation of the analyser}
 	\label{tab:jal-fun}
 \end{table}
 
@@ -468,10 +472,10 @@ Assume we have a small function:\\
 Now, while short, there already is a lot to unpack here. Let's go over it line by line. 
 \begin{itemize}
     \item Line 1: \lstinline{const S$ = require("S$")}: S\$ loads the interface library, that allows the user to interact with expoSE, declare a variable as symbolic and create assertions of conditions. More on that in the next lines.
-    \item Line 3: \lstinline{let x = S$.symbol("value")}: We create a symbolic variable "x" by using the S\$ function "symbol", which allows us to define a name to track the variable with. We pass the systenm internal variable name "value" as parameter.  
+    \item Line 3: \lstinline{let x = S$.symbol("value")}: We create a symbolic variable “x” by using the S\$ function “symbol”, which allows us to define a name to track the variable with. We pass the system internal variable name “value” as a parameter.  
     \item Line 4: \lstinline{let y = S$.symbol("multiplier", 2)}: We then create a symbolic variable “y”, internally called “multiplier”, this time, we also assign a starting seed (2), which at the same time defines the type of the variable.
     \item Line 5 to 7: then apply these variables and try to do something with them. Here, we have a simple condition ($x > 0$), which, when fulfilled, triggers the assertion \lstinline{S$.assert(x*y > x)}, which throws the exception “assertion violation”, if  the assertion is violated.
 \end{itemize}
 Afterwards, expoSE uses the functions exposed by the Jalangi2 backend  to access the instrumented code. For this, expoSE had to implement the callbacks of the provided backend functions. A template for these can be found in the Jalangi2 source code, with explanations for each of the functions, as part of an example analysis program\footnote{https://github.com/Samsung/jalangi2/blob/master/src/js/runtime/analysisCallbackTemplate.js}. 
 It starts by registering all local variables, functions and formal parameters, in our example case the variables and constants S\$, x and y. Subsequently, it resolves the statements, loads the S\$ library and creates a concolic variable: if a concrete value is present, it uses this as starting seed. Otherwise, it will try all primitive types as the first input generation (i.e. string, array, number, object etc). The symbolic part of the concolic wrapper saves all encountered path conditions, which will be used to generate a new input which satisfies another path condition, thereby diverging from the original path, and maybe finding alternative paths.
-By having the assertion \lstinline{x*y > x} we force ExpoSE to create two more paths than it normally would. Without the assertion, there are the two paths \lstinline{x>0} and \lstinline{!x>0}. But with the assertion, we added the path condition \lstinline{(x*y) > x} and its negation. This can be used to test for a certain behaviour, but requires manual modification of the program. Similar to normal conditionals, it also leads to the amount of explorable paths to explode.
+By having the assertion \lstinline{x*y > x} we force ExpoSE to create two more paths than it normally would. Without the assertion, there are the two paths \lstinline{x>0} and \lstinline{!x>0}. But with the assertion, we added the path condition \lstinline{(x*y) > x} and its negation. This can be used to test for a certain behaviour, but requires manual modification of the program. Similar to normal conditionals, it also leads to an increasing number of explorable paths.

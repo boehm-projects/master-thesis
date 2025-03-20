@@ -66,7 +66,7 @@
 
 \RequirePackage{libertine}
 \RequirePackage{inconsolata}
-
+%\RequirePackage{lmodern}
 
 \RequirePackage{xcolor}
 \definecolor{lmugreen}{HTML}{00883A}
