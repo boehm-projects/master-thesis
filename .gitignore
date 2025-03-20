@@ -18,6 +18,7 @@ thesis.pdf
 *.ist
 *.lof
 *.lot
+*.loa
 *~
 #*#
 .st_lt_cache/
