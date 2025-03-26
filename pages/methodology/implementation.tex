@@ -41,30 +41,21 @@ With the update to z3 itself, we also had to update the z3JavaScript project, as
 In this section, we will explain the limitations imposed on the application, what it means and how we can circumvent  some of them, while others are a hard  limit.
 \subsection{JavaScript Version}
 \label{sec:jsversion}
-We will start off with the hardest limitation of the application, and that is the fact, that we have to stay in syntax constructs offered by the JavaScript version known as ES6 (or ECMA 2015).
+The hardest limitation of the application is that we have to stay in syntax constructs offered by the JavaScript version known as ES6 (or ECMA 2015).
 
-This is a significant limitation, as it implies that we are unable to utilize an essential feature of contemporary JavaScript, specifically \textit{async} and \textit{await}. These two keywords refer to the asynchronous pattern that modern JavaScript employs. Without these, we will not be able to build a modern application, which is a major limitation for a server that might have to wait for resources to load or for a computation-intensive process. For these processes, we now have to rely on callbacks. 
-
-
-
-\subsection{HTTP Protocol}
-\label{sec:httpprot}
-Another limitation we faced was the communication between client and server, as typically, this would happen using HTTP. However, this would mean that we would lose the symbolic state of the program, as the transfer would occur as a byte stream with all data first transformed into a string representation. 
-A string, however, cannot be of symbolic type. \\
-This means, we had two options:\\
-Option A would require us to model the complete HTTP object, with all its bells and whistles, and then include the symbolic state of the program, all while complying with the HTTP standard. This way, we could also test HTTP, and whether the JavaScript implementation works as intended.
-
-Option B is to bypass the transmission of data entirely, by injecting the server into the client, or vice versa, depending on the server structure (more on that later). This would mean that we would have the full symbolic state of the execution, the data would not need to be transformed, and could simply be handed over to the request and response processing on server- and client-side.
+This is a significant limitation, as it implies that we are unable to utilize an essential feature of contemporary JavaScript, specifically \textit{async} and \textit{await}. These two keywords refer to the asynchronous pattern that modern JavaScript employs. Without these, we will not be able to build a modern application, which is a major limitation for a server that might have to wait for resources to load or for a computation-intensive process. For these processes, we now have to rely on the practice of nesting callbacks. 
 
 
-We deemed the modelling of the HTTP object out of scope. Therefore, we worked under the assumption, that HTTP works as intended and went for option B, as that meant, we could focus on the actual web application, and could test it in isolation.
 
 
 \subsection{Symbolic Addresses and Objects}
 \label{sec:sym-obj}
-While the other limits are specific to our use case, this issue is universal, as pointers can cause a problem on most symbolic execution engines as described by \citet{cha_unleashing_2012}, \citet{coppa_rethinking_2017} and \citet{elkarablieh_precise_2009}, just to name a few. 
+While the other limits are specific to our use case, this issue is universal. Pointers can pose challenges for most symbolic execution engines, as highlighted in various studies, including those by \citet{cha_unleashing_2012}, \citet{coppa_rethinking_2017} and \citet{elkarablieh_precise_2009}.
 Reasoning about the address of a variable poses an issue, as in theory, DSE would have to assume all possible addresses. 
-As previously mentioned in \autoref{sec:limits}, \citet{cha_unleashing_2012} proposed a symbolic address, which concretizes writes and only the read is a symbolic operation. 
+\citet{elkarablieh_precise_2009} propose an approach that limits every pointer to a concrete memory region in which it remains symbolically, reducing the amount of possible memory addresses, which in theory is simple, but as itself proclaims “nontrivial to implement”. 
+\citet{coppa_rethinking_2017} introduce the concept of \textsc{MemSight}, which allows the mapping of symbolic expressions to data, instead of instantiated addresses, reducing the need to concretize the symbolic memory addresses. 
+
+\citet{cha_unleashing_2012} proposed a symbolic address, which concretizes writes and only the read is a symbolic operation. 
 A similar approach was also taken for ExpoSE, as it concretizes the namespace a variable can occupy, and only its value is resolved symbolically.
 ExpoSE initializes a symbolic object by reserving a namespace, concretizing it.
 
@@ -79,27 +70,22 @@ the property \lstinline{object.field} gets initilized as a new symbolic variable
 \lstinline[language=JavaScript, gobble=4, escapechar=@]{object.field = S$.symbol("field");} 
 and a path condition gets added, that \lstinline{object} is, in fact, an object.\cite{loring_systematic_2021}
 
-While this works in theory, it is incredibly costly, leading to an explosion of paths, due to the dynamically typed nature of JavaScript, thus adding one path condition per type just on encountering a property access. On black-box testing, where the program has no other option for reasoning what, using completely symbolic objects does increase coverage and helps to find bugs.
+While this works in theory, it is incredibly costly, leading to an explosion of paths, due to the dynamically typed nature of JavaScript, thus adding one path condition per type just on encountering a property access. On black-box testing, where the program has no other option for reasoning about the kind of inputs the program takes, using completely symbolic objects does increase coverage and helps to find bugs.
 In our case, however, where we have full access to the code and where we have knowledge of all input fields, this can be avoided, by creating an object with possible properties already symbolically initialized. This can be done because all unused fields are simply ignored and not adding new path conditions. 
-This means, instead of waiting for ExpoSE to find \lstinline{object.field}, we start with an object already containing the field, together with a seed indicating the type, as can be seen in \autoref{lst:sym-obj}.
-\begin{minipage}{\linewidth}
-    \begin{lstlisting}[language=JavaScript, gobble=4, escapechar=@]
-        const object = {
-            "field": S$.symbol("field", "string"),
-            "numberfield"; S$.symbol("numberfield", 10),
+This means, instead of waiting for ExpoSE to find \lstinline{object.field}, we start with an object already containing the field, together with a seed indicating the type, as can be seen in 
+\begin{lstlisting}[language=JavaScript, gobble=4, escapechar=@]
+    const object = {
+       "field": S$.symbol("field", "string"),
+        "numberfield"; S$.symbol("numberfield", 10),
     };
 \end{lstlisting}
-\captionof{lstlisting}{Concrete object together with symbolic fields initilized.}
-\label{lst:sym-obj}
-\end{minipage}
-
 
 
 
 
 \subsection{External Packages}
 \label{sec:externalpack}
-Our last hard limit was that, even though it was possible to import and use external packages, the DSE engine would assume that any imported package was part of the code. Although technically true, it meant it would be instrumented and create execution branches. This led to a massive explosion in branches, and while it could be used to find bugs and errors in these external packages aswell, it did not offer any use for locating issues in the part of the web application we wanted to test. 
+Our last hard limit was that, even though it was possible to import and use external packages, the DSE engine would assume that any imported package was part of the code. Although it was technically correct, it meant it would be instrumented and create execution branches. This led to a massive explosion in branches, and while it could be used to find bugs and errors in these external packages aswell, it did not offer any use for locating issues in the part of the web application we wanted to test. 
 Hence, we opted out of using any external package for now.
 
 \subsection{Dependency Issues}
@@ -108,14 +94,33 @@ While this was not a limit per se, it proved to be an issue with executing the t
 With the release of the M1 processor by Apple, this was no longer the case.
 This meant that the ARM instruction set went from being rarely supported to a widely spread one.
 When we started working on this thesis, we noticed the lack of support. The project required Node version 14, and the package ffi-napi\footnote{https://www.npmjs.com/package/ffi-napi}, that provided the ability to create C bindings, which were used in z3, required Node 16 or higher.
-Upgrading the node version initially, would in turn create an error in ffi-napi for the ARM-based M processors~\footnote{As reported in issue https://github.com/node-ffi-napi/node-ffi-napi/issues/248}.\\
+Upgrading the node version initially, would in turn create an error in ffi-napi for the ARM-based M processors\footnote{As reported in issue https://github.com/node-ffi-napi/node-ffi-napi/issues/248}.\\
 While working on this project, the issue got resolved.
 
+\section{HTTP in Symbolic Execution}
+\label{sec:http}
+When working with web applications, there are multiple components that have to be taken care of. The internal processing, the storing and retrieving of data, and most importantly, the communication between server and client.
+This communication required leads to a dilemma in symbolic execution, as for it to function properly, it needs to hold the symbolic state across the many processing layers between client and server. 
 
 
+The requests and responses are handled at the operating system level, leaving the context a symbolic execution engine can handle. Most already face the issue of being based on a singular programming language. If, for example, we create a JavaScript request, we can have a symbolic state only as far, as it exists in this context. But once it leaves the context of a JavaScript application, we would require an engine, that supports multiple languages and can also operate on a system level.  And on the receiving end, the engine has to reverse this process, and continue with the incoming symbolic request.
+
+
+There have been efforts to support this cross-language and cross-platform dynamic symbolic execution. \citet{bucur_prototyping_2014} introduced \texttt{Chef}, which is a tool to execute an interpreter symbolically, in contrast to an engine that gets executed instead. This enables the potential to track the state of an input across multiple systems, eventually ending up on the binary level, which is well explored for dynamic symbolic execution. As long as the binary representation stays within the tested system. 
+
+%Another limitation we faced was the communication between client and server, as typically, this would happen using HTTP. However, this would mean that we would lose the symbolic state of the program, as the transfer would occur as a byte stream with all data first transformed into a string representation. 
+%A string, however, cannot be of symbolic type. \\
+%This means, we had two options:\\
+%Option A would require us to model the complete HTTP object, with all its bells and whistles, and then include the symbolic state of the program, all while complying with the HTTP standard. This way, we could also test HTTP, and whether the JavaScript implementation works as intended.
+%
+%Option B is to bypass the transmission of data entirely, by injecting the server into the client, or vice versa, depending on the server structure (more on that later). This would mean that we would have the full symbolic state of the execution, the data would not need to be transformed, and could simply be handed over to the request and response processing on server- and client-side.
+%
+%
+%We deemed the modelling of the HTTP object out of scope. Therefore, we worked under the assumption, that HTTP works as intended and went for option B, as that meant, we could focus on the actual web application, and could test it in isolation.
+%
 \section{Initial Test Plain JS Application}
 \label{sec:init-test-plain}
-After addressing all the fundamental issues, we began by creating a small server in plain JavaScript to explore whether it is possible to generate requests, process them, and return the correct response for the request. For example, a GET request with the URL '/test' is handled by a GET route registered as '/test', and not incorrectly by the POST route. 
+After addressing all the fundamental issues, we began by creating a small server in plain JavaScript to explore whether it is possible to generate requests, process them, and return the correct response for the request. For example, a \texttt{GET} request with the URL \lstinline{"/test"} is handled by a \texttt{GET} route registered as \lstinline{"/test"}, and not incorrectly by the \texttt{POST} route. 
 
 \subsection{Idea}
 

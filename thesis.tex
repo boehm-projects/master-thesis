@@ -5,6 +5,7 @@
 \usepackage{lipsum}
 \usepackage{booktabs}
 \usepackage{graphicx}
+\usepackage{realboxes}
 \usepackage{tabularx}
 \usepackage{svg}
 \graphicspath{{images/}}
@@ -36,6 +37,13 @@
   quotes,
   matrix }
 \usepackage{adjustbox}
+\definecolor{mybluei}{RGB}{124,156,205}
+\definecolor{myblueii}{RGB}{73,121,193}
+\definecolor{mygreen}{RGB}{202,217,126}
+
+\pgfdeclarelayer{background}
+\pgfsetlayers{background,main}
+
 \tikzstyle{class} = [rectangle, draw=black, fill=blue!20, text width=6em, align=center, rounded corners, minimum height=2em]
 \tikzstyle{block} = [draw, rectangle, text width=2cm, text centered, minimum height=1.2cm, node distance=3cm,fill=white]
 \tikzstyle{method} = [text width=6em, align=left]
@@ -45,8 +53,9 @@
 
 \usepackage{amsthm}
 
-\theoremstyle{definition}
-\newtheorem{definition}{Definition}
+\newfloat{lstfloat}{htbp}{lop}
+\floatname{lstfloat}{Listing}
+\def\lstfloatautorefname{Listing}
 
 \usepackage{enumitem}
 \usepackage{glossaries}
@@ -59,7 +68,7 @@
 \title{
     \begin{center}
         \bfseries\LARGE
-        Security testing of web applications with dynamic symbolic execution in expoSE
+        Security Testing of Web Applications with Dynamic Symbolic Execution in ExpoSE
     \end{center}
 }
 \preauthor{}
@@ -103,7 +112,7 @@
         \begin{Large}
             Master's Thesis \\
         \end{Large}
-        in course type Computer Science\\
+         in Computer Science\\
     \end{large}
 \end{center}
 
@@ -115,11 +124,6 @@
     \end{large}
 \end{center}
 
-\begin{center}
-    \begin{large}
-        Advisor: Advisor's name\\
-    \end{large}
-\end{center}
 
 
 \begin{center}
@@ -152,9 +156,14 @@
 \input{pages/introduction/introduction}
 
 % ---------------------------------------------- %
-\chapter{Background}
+\chapter{Terminology and Theory}
 \label{chapter:background}
 \input{pages/introduction/background}
+
+% ---------------------------------------------- %
+\chapter{Techstack}
+\label{chapter:techstack}
+\input{pages/introduction/Techstack}
 
 % ---------------------------------------------- %
 \chapter{Implementation}
@@ -168,15 +177,16 @@
 \input{pages/methodology/express}
 
 % ---------------------------------------------- %
-\chapter{Application}
-\label{chapter:application}
-\input{pages/methodology/application}
-% ---------------------------------------------- %
+
 
 \chapter{Evaluation}
 \label{chapter:evaluation}
 \input{pages/eval/evaluation}
 
+% ---------------------------------------------- 
+\chapter{Discussion}
+\label{chapter:discussion}
+\input{pages/eval/discussion}
 % ---------------------------------------------- %
 \chapter{Related Work}
 \label{chapter:related-work}
@@ -204,6 +214,7 @@
 \microtypesetup{protrusion=false}
 \listoffigures{}
 \listoftables{}
+\lstlistoflistings
 \listofalgorithms
 \microtypesetup{protrusion=true}
 

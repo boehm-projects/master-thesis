@@ -1,14 +1,9 @@
-To address the research questions posed in~\autoref{sec:research-questions}, it is imperative to first comprehend the subjects and their fundamentals. 
 
-We start by defining the terminology, giving an overview of the topic areas, and explaining their theory touched upon by this thesis in~\autoref{sec:defs}. Afterwards, we cover the technologies used within the tool ExpoSE in~\autoref{sec:tech}.
-
-\section{Terminology and Theory}
-\label{sec:defs}
 To provide an overview of all the topics that will be addressed, we will begin by defining the key components of this thesis and explaining the basics to build upon in the later chapters. 
 
-\subsection{Web Applications}
+\section{Web Applications}
 \label{sec:webapp}
-A \textit{web application} has been defined as “a software application, executed by a web server, which responds to dynamic web page requests over HTTP” by the Web Application Security Consortium \gls{wasc} ~\cite{noauthor_web_2012}. 
+A \textit{web application} has been defined as “a software application, executed by a web server, which responds to dynamic web page requests over HTTP” by the Web Application Security Consortium \gls{wasc}~\cite{noauthor_web_2012}. 
 In simpler terms, a web application is software that runs on a server and users access it through a web browser (like Chrome or Firefox) over the internet.
 
 Typically, the resources and scripts of web applications — such as images, text, or functionalities — are requested by the client, which is the user's computer or device, using a web browser or similar tools. This interaction follows a set of rules known as the \gls{api}, which specifies what requests can be made and how the server should respond.
@@ -70,26 +65,94 @@ This adherence ensures that the server and client can operate independently, mea
     \label{tab:rest_http_methods}
 \end{table}
 \FloatBarrier
-\subsection{Testing}
-\label{sec:testing}
 
-The next aspect we would like to concentrate on is the testing of a web application. First we define what "testing" means, then look into the methodology of "fuzzing" as a technique used to test. We limit this to the following two testing paradigms:
-Black Box Fuzzing (\autoref{sec:black-box})and White Box Fuzzing (\autoref{sec:white-box}) .
+\section{Cross-Site Scripting}
+\label{sec:xss}
+\textit{Cross-site scripting} (XSS) is a security vulnerability that enables the execution of malicious code on a remote server or
+another client by exploiting weaknesses in server-side input validation. \cite{bisht_xss-guard_2008}
+According to the Open Web Application Security Project (OWASP) top 10 list, XSS, and other code injection techniques, are the second most common vulnerabilities in web applications, only surpassed by broken access control.\cite{noauthor_owasp_2025}
 
-\subsubsection{Testing}
-At its essence, \textit{Testing} constitutes the systematic process of validating and verifying the functionality of a program. A sensible analogy for the concepts of validation and verification was articulated by \citet{b_w_boehm_verifying_1984}:
+\citet{tang_identifying_2012} describe two kinds of XSS attacks, reflected, or non-persistent, XSS and persistent XSS.
+\subsection{Reflected XSS}
+
+Reflected XSS means, 
+
+
+\subsection{Persistent XSS}
+
+\autoref{fig:xss-simp} illustrates a simplified scenario in which persistent XSS can be employed to execute code on
+another machine by sending malicious code to the server, which subsequently transfers this malicious code to unsuspecting clients.
+A common instance of this vulnerability occurs when an application provides a web interface that allows users
+to enter and store text without adequate server-side input validation and sanitization,
+thereby failing to prevent users from executing HTML scripts on the devices of other users.
+
+A recent example of this would be a vulnerability in the web interface web UI of Cisco Enterprise Chat and 
+Email\footnote{https://www.cisco.com/c/en/us/support/docs/csa/cisco-sa-ece-xss-CSQxgxfM.html}. 
+Cisco is a company that develops communication and security-related tools, 
+underscoring the critical need for rigorous testing for vulnerabilities,
+as even organizations specializing in security can overlook certain issues.
+
+The severity of a vulnerability hinges on the accessibility of the exploit. 
+If an attack requires authentication and allows for traceability,
+it may represent a minor inconvenience and therefore calls for a patch of the issue,
+as the attacker can be identified. However, if an XSS attack can be executed anonymously,
+this poses a significant risk to all users and requires immediate remediation.
+
+
+%\clearpage
+\begin{figure}[H]
+\centering
+\begin{adjustbox}{height=5cm}
+\begin{tikzpicture}[node distance=1cm]
+
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=red!30]
+
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=orange!30]
+\tikzstyle{decision} = [diamond, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=lmugreen!69]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+
+
+\node (start) [startstop] {Malicious Attacker Client};
+\node (pro1) [process, below = of start] {\lstinline{ <script>alert("Hello")</script>}};
+\node (dec1) [decision, below = of pro1] {Server};
+\node (pro2a) [startstop, below  = of dec1, xshift=-3cm] {Unassuming Client};
+\node (pro2b) [startstop, below  = of dec1, xshift=3cm] {Unassuming Client};
+\node (stopA) [process, below = of pro2a] {Hello};
+\node (stopB) [process, below = of pro2b] {Hello};
+
+
+\draw  [arrow](start) -- node[anchor=east] {post message} (pro1);
+\draw  [arrow](pro1) -- node[anchor=east] {store message}(dec1);
+\draw  [arrow](dec1) -- node[anchor=east] {distribute message} (pro2a);
+\draw [arrow] (dec1) -- node[anchor=west] {distribute message} (pro2b);
+\draw [arrow] (pro2a) -- node[anchor=west] {execute code}(stopA);
+\draw [arrow] (pro2b) -- node[anchor=west] {execute code}(stopB);
+\end{tikzpicture}
+\end{adjustbox}      
+    \caption[Simplified XSS attack example]{An example of a XSS attack. A malicious attacker sends a message to the server that contains a script, which will be distributed to clients. Upon receiving the message, the script will be executed.}
+    \label{fig:xss-simp}
+\end{figure}
+
+
+\section{Testing}
+The next aspect we would like to concentrate on is the testing of a web application. First we define what “testing” means, then look into the methodology of “fuzzing” as a technique used to test.
+
+At its essence, \textit{testing} constitutes the systematic process of validating and verifying the functionality of a program. A sensible analogy for the concepts of validation and verification was articulated by \citet{b_w_boehm_verifying_1984}:
 
 \begin{itemize}[label={}]
     \item \textit{Verification}: “Am I building the product right?” 
     \item \textit{Validation}: “Am I building the right product?”
 \end{itemize}
-Depending on the nature of the testing methodology employed, different levels of  assessment can be achieved. A unit test, which is designed to evaluate a single component or function—hence the term “unit”—primarily provides insights into the correctness of that individual function. In contrast, an end-to-end test, while potentially less precise in verifying the functionality of individual components, serves to validate the overall functionality of the entire system. 
+Depending on the nature of the testing methodology employed, different levels of  assessment can be achieved. A unit test, which is designed to evaluate a single component or function—hence the term “unit”—primarily provides insights into the correctness of that individual function. \cite{beck_test-driven_2003}
+
+In contrast, an end-to-end test, while potentially less precise in verifying the functionality of individual components, serves to validate the overall functionality of the entire system, with all components integrated. \cite{paul_end--end_2001}
 
 Given that a program can accommodate a vast array of potential inputs, it may be impractical to manually identify all possible variations. Therefore, we can utilize a technique known as “fuzzing”.
 
-\subsubsection{Fuzzing}
+\section{Fuzzing}
 \label{sec:fuzzing}
-\textit{Fuzzing} is an automated process that involves the generation of input data to identify potential program errors, commonly referred to as "bugs", which may arise from unhandled edge cases. These edge cases can include scenarios such as incompatible data types, excessively large entities, or the presence of unexpected characters.
+\textit{Fuzzing} is an automated process that involves the generation of input data to identify potential program errors, commonly referred to as “bugs”, which may arise from unhandled cases. These cases can include scenarios such as incompatible data types, excessively large entities, or the presence of unexpected characters.
 The most basic idea of fuzzing is generating random input strings, which, when it was done first, already found bugs and crashes in the tested libraries \cite{miller_empirical_1990}.\\
 Fuzzing can be done in different ways, and in the following we will describe the two most commonly used types: “white-box” fuzzing and “black-box” fuzzing.
 
@@ -162,7 +225,7 @@ Fuzzing can be done in different ways, and in the following we will describe the
 
 \end{tabular*}
 
-\subsubsection{Black Box Fuzzing}
+\subsection{Black Box Fuzzing}
 \label{sec:black-box}
 \textit{Black box fuzzing} (ref. \autoref{fig:black-box-testing}) is a software testing method that evaluates an application’s security and robustness by feeding it random or semi-random inputs without any knowledge of its internal workings—such as source code, data structures, or algorithms. This approach simulates an external attacker's perspective, enabling testers to discover vulnerabilities that might be exploited by malicious users in a real-world scenario.
 
@@ -175,7 +238,7 @@ Black-box fuzzing can be effective in identifying common security vulnerabilitie
 Though black-box fuzzing offers valuable insights into application security, it does have some limitations. Specifically, the randomness of the generated inputs might not exercise all potential execution paths, leaving some vulnerabilities undiscovered. Moreover, in the absence of an understanding of the internal code structure, it may prove challenging to determine which vulnerabilities are of greater significance based on their potential impact.
  \cite{godefroid_random_2007}
 
-\subsubsection{White Box Fuzzing}
+\subsection{White Box Fuzzing}
 \label{sec:white-box}
 \textit{White box fuzzing} (ref. \autoref{fig:white-box-testing}) is a software testing technique that seeks to identify vulnerabilities and bugs within applications by utilizing an in-depth understanding of their internal structures and logic. Unlike traditional black-box testing methods, where testers approach the software without any knowledge of its internal workings, white-box fuzzing leverages access to the source code, algorithms, and data flows, allowing for a more targeted and effective analysis.
 
@@ -190,11 +253,10 @@ The primary objective of white-box fuzzing is to detect issues such as buffer ov
 
 
 
-\subsection{Dynamic Symbolic Execution}
+\section{Dynamic Symbolic Execution}
 \label{sec:dse}
-\textit{Dynamic symbolic execution} (DSE), first presented in the seventies, is a form of white-box fuzzing, as it requires access to the source code. However, instead of requiring an actual input, it assumes that the variables are “symbolic”, meaning that they do not possess a tangible value during execution of the program. Instead, it tracks the conditions encountered during runtime, generating constraints based on the symbolic variables. 
+\textit{Dynamic symbolic execution} (DSE), first presented in the seventies \cite{boyer_selectformal_1975}\cite{king_new_1975}\cite{king_symbolic_1976}, is a form of white-box fuzzing, as it requires access to the source code. However, instead of generating all inputs from the start, it assumes that the variables are “symbolic”, meaning that they do not possess a tangible value during execution of the program. Instead, it tracks the conditions encountered during runtime, generating constraints based on the symbolic variables. 
 This facilitates a comprehensive examination of multiple program pathways, thereby aiding in the identification of anomalies that may result in unforeseen behaviour or security vulnerabilities.
-\cite{boyer_selectformal_1975}\cite{king_new_1975}\cite{king_symbolic_1976}\\
 After exploring a particular execution path, DSE employs constraint solvers to analyse the constraints collected during execution. These solvers determine concrete inputs that can satisfy the path constraints, allowing the generation of specific test cases to trigger particular code paths during subsequent executions.
 
 By using DSE, testers can automatically generate test cases that reliably expose bugs or vulnerabilities, such as buffer overflows or access violations. This allows for a more exhaustive testing process that can reveal flaws that traditional fuzzing techniques might overlook.
@@ -203,7 +265,7 @@ The synergy between DSE and white-box fuzzing promotes automated test generation
 
 
 
-\subsubsection{Example Dynamic Symbolic Execution}
+\subsection{Example Dynamic Symbolic Execution}
 In this subsection, we will demonstrate the concept of DSE by employing the code in \autoref{lst:example-program}. 
 To facilitate the process, we can first depict the program as a Control Flow Graph (\gls{cfg}) \autoref{fig:example-program-graph}. 
 The CFG displays the conditions and transformations along its edges, with the vertices signifying the state of the program.
@@ -289,13 +351,13 @@ We can now construct the symbolic execution tree displayed in \autoref{fig:symbo
 After constructing the execution tree, we can generate distinct inputs for each of the leaf nodes, checking for satisfiability.
 For instance, if we want to determine which input would cover the branch in the middle of the tree, we can do so by solving the constraints  $(\neg(X \neq Y) \land (Y > 8) \land \neg( X+1==0 ) \land \neg(Y+1 \neq 0 ))$. 
 Solving these constraints yields the answer of (x = 9, y = 9), which indicates that this input will satisfy the specified conditions for that branch. 
-Any condition that cannot be satisfied means that the leaf node cannot be reached no matter the input. The two leafs highlighted in red in  \autoref{fig:symbolic-execution-tree} showcase this.
-These constraints are usually solved by an SMT Solver, which we will briefly explain in \autoref{sec:smtsolver}.
+Any condition that cannot be satisfied means that the leaf node cannot be reached, no matter the input. The two leafs highlighted in red in  \autoref{fig:symbolic-execution-tree} showcase this.
+These constraints are usually solved by an SMT Solver, which we will briefly explain in \autoref{sec:z3}.
 
 
 JavaScript has a few peculiarities, as it is dynamically typed and therefore only resolved at runtime. 
 
-\subsubsection{Limitations DSE}
+\subsection{Limitations DSE}
 
 As with any explorative system, DSE has limitations regarding its capabilities. 
 The most significant limitation is computable paths, which have the potential to explode if the analysed program is not designed with DSE in mind, for instance, if it heavily relies on recursive calls. 
@@ -305,177 +367,10 @@ This also occurs with symbolic addresses, as it has to account for any possible 
 To address this, most DSE frameworks employ various kinds of techniques for reducing the number of paths. 
 One such technique is path merging based on heuristics, where a reoccurring conditional, can be merged into one (for example in a loop).\cite{kuznetsov_efficient_nodate}
 
-\citet{cha_unleashing_2012} propose a solution for a symbolic memory, reducing the possible paths for symbolic addresses by concretizing writes and only allowing sybolic.    
+\citet{cha_unleashing_2012} propose a solution for a symbolic memory, reducing the possible paths for symbolic addresses by concretizing writes and only allowing symbolic.    
 
 It also is not suitable for full boundary testing, as DSE checks for reachability, and once a path is covered, it will not move back and check for edge case in this path, possibly missing unexpected behaviour, i.e. catching an integer overflow.\cite{berthier_efficient_2023}
 
 
-\FloatBarrier
-\subsection{SMT Solver}
-\label{sec:smtsolver}
-Deciding whether a logical expression is satisfiable, depending on the expression, a difficult process.
-If we take the simple expression $a = b \land b= c\land c = d \land d \neq e \land e = a$, we can check the satisfiability.
-From $a = b$, we deduce that $a$ and $b$ must have the same value. 
-Since $b = c$, it follows that $c$ is equal to $a$ and $b$. 
-By continuing this pattern, we see that $d$ must also equal $a$, $b$, and $c$. 
-However, the expression $d \neq e$ states that $d$ cannot equal $e$. Since $e = a$, this places $e$ back in the equality chain, leading to a contradiction: $d$ must equal $e$ (since $e = a = b = c = d$), which conflicts with $d \neq e$.
-
-Automating this process of checking for satisfiability is done by a \textit{Boolean Satisfiability Theories} (\gls{sat}) Solver, first introduced by  \citet{davis_computing_1960} as the Davis-Putnam algorithm, enhanced by adding backtracking, developed by \citet{davis_machine_1962}, formerly known as the Davis, Logemann and Loveland Algorithm or DLL, and nowadays usually found as Davis-Putnam-Logemann-Loveland (DPLL)-Algorithm. 
-
-As a SAT solver is limited to boolean expressions, the \textit{satisfiability modulo theories }(\gls{smt}) solver was developed, with the ability of solving an arbitrary expression.
-
-\cite{barrett_satisfiability_2009}
 
 
-\section{Tech Stack}
-\label{sec:tech}
-In this section, we will delve into the inner workings of the expoSE framework, what tools it uses and their function within. 
-For the following sections, we will use the following small code snippet to explain how the system works. 
-
-
-\begin{figure}[h]
-    \begin{lstlisting}[language=JavaScript, gobble=4]
-    const S$ = require("S$");
-    
-
-    let x = S$.symbol("value"); 
-    let y = S$.symbol("multiplier", 2);
-    
-    if (x > 0) {
-        S$.assert(x*y > x, "assertion violation"); 
-    }
-    
-   
-    \end{lstlisting}
-    \caption{A simple program for ExpoSE}
-    \label{fig:expose-sample-program}
-\end{figure}
-
-
-
-\subsection{Jalangi}
-\label{sec:jalangi}
-The Jalangi2 GitHub page \cite{noauthor_samsungjalangi2_nodate} states: "Jalangi2 is a framework for writing dynamic analyses for JavaScript." , and was first presented by \citet{sen_jalangi_2013}. It is used to instrument the JavaScript code that is to be analysed and provides callbacks for a program to spy onto the execution.
-Jalangi2 enables this, by attempting to simplify every execution statement by breaking them down into atoms, which are made up of the functions listed \autoref{tab:jal-fun}, which in turn provide callbacks to hook further into the execution.
-The analysing tool can implement these callbacks in order to gain insight and/or modify the return value.
-
-
-To instrument the code snippet in \autoref{fig:expose-sample-program}, Jalangi2 first transforms the passed code to es6 using Babble, to ensure a consistent syntax. 
-Afterward, Jalangi2 instruments the code using the JavaScript parser "acorn"\footnote{https://github.com/acornjs/acorn} to generate the AST (Abstract Syntax Tree) and then rewrites the code using Jalangi's own operatrions. This creates two files per input: 
-A \{filename\}\_jalangi.js and a \{filename\}\_jalangi.json. The .js file, contains the instrumented code, similar to \autoref{fig:code-snippet}, along with the static unique instruction identifiers (iids) of each callback as a JSON object, while the .json file only contains the iids.
-
-Although the functions exhibit variation in their parameters, they always include the iid (instruction identifier) as their primary parameter. This identifier serves as a unique reference within a JSON object, which stores an array for each statement. Each array contains critical metadata consisting of the starting line number, the column of the expression on that line, the line number where the expression concludes, and the respective column number associated with the termination of the expression.
-
-
-
-\begin{figure}[ht]
-
- \lstset{basicstyle=\footnotesize}
-    \begin{lstlisting}[language=JavaScript, gobble=4]
-    J$.N(225, 'S$', S$, 0);             // Init S$
-    J$.N(233, 'x', x, 0);               // Init x
-    J$.N(241, 'y', y, 0);               // Init y
-    var S$ = J$.X1(41,                  // Top level declaration
-        J$.W(33, 'S$',                  // Write the result of the following:
-            J$.F(25,                 // Call the function with the follwing parameter:
-                J$.R(9, 'require', require, 2),// Read the value of "require"
-                0)  (
-                    J$.T(17, "S$", 21, false)    // Retrieve the value of the S$ object
-                    ), S$, 3));
-    var x = J$.X1(89,                            // Top level declaration
-        J$.W(81, 'x',                            // Write the result of the following:
-            J$.M(73,                                   // Call the function of:
-                J$.R(49, 'S$', S$, 1),           // Read the value of the expression S$
-                'symbol', 0)                     // Name of the called function
-                    (J$.T(57,"value", 21, false),// Defines the value of the 
-                                                 // variable as literal
-            J$.T(65, 0, 22, false)),x, 3));      // Retrieve the value "0"
-
-
-    \end{lstlisting}
-    \caption[Instrumented code snippet]{A shortened program snippet from \autoref{fig:expose-sample-program}, instrumented by \texttt{JALANGI2}, with explanation}
-    \label{fig:code-snippet}
-\end{figure}
-\newpage
-As it is apparent in \autoref{fig:code-snippet}, every assignment can be traced on a granular level, enabling the analyser to know the exact state of a program, at any stage of the execution. If, for example, we wanted to modify, or simply log the value of the multiplier in line 24, we could do so by hooking (accessing the execution process) into the callback function provided for the function T.
-This example, of course, is almost as simple as it can get. This is because JavaScript is known for having expressions that contain multiple callbacks, which in turn may or may not have callbacks themselves, colloquially called “Callback Hell” \cite{max_ogden_callback_2019}. And while an example with a callback would be a better representation of a real program, it would also mean that the instrumented code example be by a magnitude longer, rendering the example incomprehensible (not to mention, \textit{rendering} it on PDF and having it readable impossible). \\
-
-
-\begin{table}[h]
-\resizebox{\linewidth}{!}{%
-	\begin{tabular}{l|l|l}
-    {\lstinline|J$.U           |} & Unary operation                                       & {\lstinline|unaryPre|} and {\lstinline|unary|}                      \\
-		{\lstinline|J\$.B           |} & Binary operation                                      & \lstinline|binaryPre| and \lstinline|binary|                    \\
-		{\lstinline|J\$.C           |} & Condition                                             & \lstinline|conditional|                             \\
-		{\lstinline|J\$.C1          |} & Switch key \lstinline|x in switch(x) { ... }|                    & no callback                             \\
-    {\lstinline|J\$.C2          |} & case label \lstinline|C1 === C2|                                  & no own callback, uses callback of {\lstinline|J\$.C|} \\
-		{\lstinline|J\$.\_          |} & Last value passed to C                                & no own callback                         \\
-    {\lstinline|J\$.H           |} & hash in for-in. Wrap object \lstinline|o in for (x in o) { ... }| & {\lstinline|forinObject|}                             \\
-  {\lstinline|J\$.I           |} & Ignore argument (Identity)                             & no callback                             \\
-		{\lstinline|J\$.G           |} & Get a field                                              & \lstinline|getFieldPre| and \lstinline|getField|                \\
-		{\lstinline|J\$.P           |} & Put a Field                                             & \lstinline|putFieldPre| and \lstinline|putField|                \\
-		{\lstinline|J\$.R           |} & Read variable                                         & \lstinline|read|                                    \\
-		{\lstinline|J\$.W           |} & Write variable                                        &\lstinline|write |                                  \\
-		{\lstinline|J\$.N           |} & Init                                                  &\lstinline|declare|                                 \\
-		{\lstinline|J\$.T           |} & object/function/regexp/array Literal                  &\lstinline|literal |                                \\
-		{\lstinline|J\$.F           |} & Function call                                         &\lstinline|invokeFun|                               \\
-    {\lstinline|J\$.M           |} & Method call                                           &\lstinline|invokeFun| and uses callbacks of {\lstinline|J\$.P|}   \\
-		{\lstinline|J\$.A           |} & Modify and assign \lstinline|+=, -= ...|                          & uses callbacks of \lstinline|J\$.P| and \lstinline|J\$.B|       \\
-		{\lstinline|J\$.Fe          |} & Function enter                                        &\lstinline| functionEnter |                          \\
-		{\lstinline|J\$.Fr          |} & Function return                                       &\lstinline| functionExit  |                          \\
-		{\lstinline|J\$.Se          |} & Script enter                                          &\lstinline| scriptEnter   |                          \\
-		{\lstinline|J\$.Sr          |} & Script return                                         &\lstinline| scriptExit    |                          \\
-		{\lstinline|J\$.Rt          |} & returned value                                        &\lstinline| \_return      |                          \\
-		{\lstinline|J\$.Th          |} & thrown value                                          &\lstinline| \_throw       |                          \\
-		{\lstinline|J\$.Ra          |} & Reads the return value stored by call to \lstinline|Rt()|         & no callback                             \\
-		{\lstinline|J\$.Ex          |} & Uncaught exceptions                                   & no callback                             \\
-		{\lstinline|J\$.L           |} & Returns the last computed value                       & no callback                             \\
-		{\lstinline|J\$.X1          |} & top level expression                                  &\lstinline| endExpression               |            \\
-		{\lstinline|J\$.Wi          |} & with statement                                        &\lstinline| \_with                      |            \\
-		{\lstinline|J\$.endExecution|} & terminating execution                                 &\lstinline| endExecution                |            \\
-		{\lstinline|J\$.S           |} & with statement                                        &\lstinline| runInstrumentedFunctionBody |            \\
-	\end{tabular}}
-	\caption[List of Jalangi2 functions]{Jalangi2  functions, their descriptions, and their callbacks as stated in the JavaScript Documentation of the analyser}
-	\label{tab:jal-fun}
-\end{table}
-
-\FloatBarrier
-\subsection{Z3 SMT Solver and Z3JavaScript}
-\label{sec:z3}
-
-
-ExpoSE uses the Z3 SMT Solver \cite{de_moura_z3_2008} for solving the found path conditions of the analysed program. Developed by Microsoft, it has constant progress and improvements to its capabilities.
-
-To use the SMT Solver, it offers an interface that connects a program in a higher-level language, like Python, Java, C++, or JavaScript, for which z3 offers a NPM (Node Package Manager) package since 2022. In expoSE, however, it is used in combination with the project Z3JavaScript, as, when expoSE got developed, there were no native JavaScript bindings available for Z3. 
-
-These bindings are required to connect these higher-level languages to the core system of z3, which is implemented in C.
-
-ExpoSE uses it to solve the path conditions generated by the first run of the symbolic execution, to yield new inputs, which in turn add new path conditions to be solved by Z3. 
-
-
-Z3Javascript is a wrapper for the API of Z3, which generates the JavaScript bindings to be used in ExpoSE using ffi-napi, and builds the Z3 binary.
-
-It then exposes functions that are used to interact with Z3, converting JavaScript types into C-types. 
-Additionally, it transforms JavaScript regular expressions in order for the Z3 parser to understand them.
-
-
-
-
-
-
-\subsection{expoSE}
-\label{sec:expose}
-ExpoSE builds on top of the previously presented projects and technologies. Utlizing these aforementioned tools, it is a DSE Framework for JavaScript, which allows almost any JavaScript code to be tested for bugs, by generating tests that cover the code base to a high degree and checking for reachability of statements. \cite{loring_expose_2017}
-
-In the following, we will demonstrate how exactly the framework operates. \\
-Assume we have a small function:\\
-Now, while short, there already is a lot to unpack here. Let's go over it line by line. 
-\begin{itemize}
-    \item Line 1: \lstinline{const S$ = require("S$")}: S\$ loads the interface library, that allows the user to interact with expoSE, declare a variable as symbolic and create assertions of conditions. More on that in the next lines.
-    \item Line 3: \lstinline{let x = S$.symbol("value")}: We create a symbolic variable “x” by using the S\$ function “symbol”, which allows us to define a name to track the variable with. We pass the system internal variable name “value” as a parameter.  
-    \item Line 4: \lstinline{let y = S$.symbol("multiplier", 2)}: We then create a symbolic variable “y”, internally called “multiplier”, this time, we also assign a starting seed (2), which at the same time defines the type of the variable.
-    \item Line 5 to 7: then apply these variables and try to do something with them. Here, we have a simple condition ($x > 0$), which, when fulfilled, triggers the assertion \lstinline{S$.assert(x*y > x)}, which throws the exception “assertion violation”, if  the assertion is violated.
-\end{itemize}
-Afterwards, expoSE uses the functions exposed by the Jalangi2 backend  to access the instrumented code. For this, expoSE had to implement the callbacks of the provided backend functions. A template for these can be found in the Jalangi2 source code, with explanations for each of the functions, as part of an example analysis program\footnote{https://github.com/Samsung/jalangi2/blob/master/src/js/runtime/analysisCallbackTemplate.js}. 
-It starts by registering all local variables, functions and formal parameters, in our example case the variables and constants S\$, x and y. Subsequently, it resolves the statements, loads the S\$ library and creates a concolic variable: if a concrete value is present, it uses this as starting seed. Otherwise, it will try all primitive types as the first input generation (i.e. string, array, number, object etc). The symbolic part of the concolic wrapper saves all encountered path conditions, which will be used to generate a new input which satisfies another path condition, thereby diverging from the original path, and maybe finding alternative paths.
-By having the assertion \lstinline{x*y > x} we force ExpoSE to create two more paths than it normally would. Without the assertion, there are the two paths \lstinline{x>0} and \lstinline{!x>0}. But with the assertion, we added the path condition \lstinline{(x*y) > x} and its negation. This can be used to test for a certain behaviour, but requires manual modification of the program. Similar to normal conditionals, it also leads to an increasing number of explorable paths.

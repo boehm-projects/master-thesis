@@ -2,18 +2,17 @@ This thesis reports on the feasibility of testing a web application using the dy
 and whether it can be used to find bugs and security vulnerabilities in the form of cross-site scripting, 
 contributing to the field of \textit{program} \textit{verification} and \textit{validation}.
 In \autoref{chapter:background} we introduced and explained the relevant theories and definitions of dynamic symbolic execution, testing and web applications.
+The \autoref{chapter:techstack} explained how ExpoSE operates and what technologies it uses.
 \autoref{chapter:implementation} gave an overview of ground-laying work done for this thesis, which was required preceding the actual implementation for this thesis.
 It also describes a small proof of concept that it was indeed possible to test a web application using ExpoSE. 
 This proof of concept sustained our idea and led us to the design and implementation of the Express model we presented in \autoref{chapter:express}, which allowed us to not only test the most basic applications,
 but also servers that were built using the framework Express.Js, as it was small enough to be feasible for the scope of this thesis, but widespread enough that 
-there were real servers that could be used, and therefore tested. In \autoref{chapter:application} we described what it takes to test a web application using ExpoSE and our Express model, 
-which numbered few but sadly removed the possibility of running it outside the testing context due to a change in imports and usage of these.
-In this chapter, we also explained the concept of cross-site scripting.
+there were real servers that could be used, and therefore tested. In \autoref{chapter:application} we described what it takes to test a web application using ExpoSE and our Express model. The required modifications numbered few, but sadly removed the possibility of running it outside the testing context due to a change in imports and usage of these.
 
-We then moved on to presenting how we evaluated our Express model, how we tested and which results those tests yielded. We tested two web applications, one of our creation and one we found on GitHub, which we 
-only modified as required for testing purposes. We split our tests into two categories. The first category was to try and see whether it was indeed possible to reliably test a server. 
-We defined reliably as the ability of consistently discovering all available routes with the correct HTTP method and a body that matched the expected input. The results for this testing category showed,
-that ExpoSE covered all routes and yielded the expected response. From testing the GitHub project, we found that our Express model correctly configured the server, applying all middle ware and routes as expected.
+
+We then moved on to presenting how we evaluated our Express model, how we tested and which results those tests yielded. We tested two web applications, one of our creation and one we found on GitHub, which we only modified as required for testing purposes. We split our tests into two categories. The first category was to try and see whether it was indeed possible to reliably test a server. 
+The results for this testing category showed, that ExpoSE covered all routes and yielded the expected response. From testing the GitHub project, we found that our Express model correctly configured the server, applying all middle ware and routes as expected.
+We noted a heavy increase in memory usage when it encountered a route with a parameter. The coverage was more than satisfactory, with it approaching almost 90\%, with the remaining 10\% mostly being unreachable code, proving its ability to highlight these parts.
 As the results of the tests for the first category returned positive, we proceeded with testing the servers, this time with security issues in mind. This proved more difficult. While it was possible to argue, that input equals output meant that yes, XSS was possible. This was unsatisfactory. 
 
 

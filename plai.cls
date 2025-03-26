@@ -62,7 +62,7 @@
 \LoadClass[a4paper,11pt, twoside, openright]{report} % Use 'report' for thesis
 
 % Set the page margins
-\RequirePackage[left=30mm,right=30mm,top=30mm,bottom=40mm,binding offset=5mm, \nouse{showframe}]{geometry}
+\RequirePackage[left=30mm,right=30mm,top=30mm,bottom=40mm,binding offset=15mm, \nouse{showframe}]{geometry}
 
 \RequirePackage{libertine}
 \RequirePackage{inconsolata}
@@ -122,6 +122,7 @@
     escapeinside={(@}{@)},
     aboveskip=0pt,
     belowskip=0pt,
+    linewidth=.99\textwidth,
 }
 
 % Custom title in bold

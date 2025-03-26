@@ -1,0 +1,25 @@
+In this chapter, we present our findings in \autoref{sec:findings}, discuss discovered limitations in \autoref{sec:limitations} and provide our thoughts on further research and work in \autoref{sec:ft-research}.
+
+\section{Findings}
+\label{sec:findings}
+Our findings are based on the presented results in \autoref{sec:results}, and the experiences we gained during the research for this thesis.
+
+\subsection{Reliability of End-to-End Testing}
+Using ExpoSE combined with Dynamic Symbolic Execution provided clear insights into the testing capabilities for web applications. As presented in \autoref{sec:results}, our efforts resulted in the successful testing of multiple web applications using our Express model.Through this approach, we were able to generate inputs that thoroughly covered all defined routes and effectively addressed decisions that rely on correct path parameters. By automatically generating diverse inputs, ExpoSE ensured exhaustive coverage of application functionality, helping us identify both expected and edge case behaviours.
+Thus, we can confidently assert that ExpoSE is a viable tool for testing web applications. Its capabilities in generating inputs that traverse different routes and decision points substantiate its effectiveness in revealing hidden issues that may arise in complex application flows. 
+
+
+\subsection{Identification of Security Vulnerabilities}
+The investigation into the identification of security vulnerabilities using ExpoSE revealed some concerning aspects regarding its reliability during testing. Specifically, while ExpoSE performed effectively as a standalone testing tool, we observed a decline in accuracy when executing tests in parallel. This led to a situation where the framework no longer generated inputs that sufficiently covered all paths, making it challenging to ensure comprehensive vulnerability detection.
+
+Due to this limitation, we opted to test for XSS executing one test at a time. Despite the parallel testing challenges, our findings indicate that ExpoSE is still capable of identifying vulnerabilities. The framework provides valuable insights into allowed inputs by generating test cases that include potential attack patterns within strings.
+
+Therefore, the second research question, whether ExpoSE can be utilized for discovering security issues, cannot be answered with certainty. While ExpoSE appears promising in generating inputs that could lead to the discovery of vulnerabilities, the complexities involved suggest that its reliability in performing such tasks needs further investigation. 
+
+
+\section{Limitations}
+\label{sec:limitations}
+End-to-end testing can help unravel issues with persistent XSS, as storing and responding with strings that may contain attack scripts is enabled via lacking input validation, which is easily testable using ExpoSE. On the other hand, since the tests are end-to-end, the client dictates the outcome. If it does not do anything with the response, ExpoSE will not go out of its way to generate different inputs for the same route. It only executes each path precisely once and continues with the next branch, therefore locating a security issue can be bound to the absence of an input, requiring an understanding of the expected behaviour.
+
+\section{Future Work}
+\label{sec:ft-research}

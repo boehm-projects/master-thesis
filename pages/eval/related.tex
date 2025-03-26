@@ -1,4 +1,4 @@
-\section{Related Projects}
+
 
 As there is a constant strive to find a way to thoroughly test and thereby eliminate the existence of bugs and unwanted behaviour, there are a myriad of papers, each proposing a solution to a subset of the overarching problem of badly written code.  In this section, we present a selection of these projects and what problem they try to solve.\\
 KLEE \cite{cadar_klee_nodate}\\
@@ -8,10 +8,10 @@ Black Widow \cite{eriksson_black_2021}\\
 Black Ostrich \cite{eriksson_black_2023}\\
 Mayhem \cite{cha_unleashing_2012}\\
 DART  \cite{godefroid_random_2007}\\
-\section{Progress in Dynamic Symbolic Execution}
+KUDZU \cite{saxena_symbolic_2010}\\
+\citet{kieyzun_automatic_2009} XSS\\
 
-Recently, DSE became a staple for testing projects for edge cases and loopholes. 
-This generated progress in how and when DSE can be used. 
+
 
 Tackling the path explosion of symbolic execution is a  major part of the recent research.
 \citet{ryan_countering_nodate} try to alleviate this by introducing piece-wise composition, which passes the problem to the SMT solver as chunked independent trees of the complete execution tree, reducing the cost on the dynamic symbolic execution.
