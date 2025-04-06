@@ -1,4 +1,5 @@
-
+\pagenumbering{arabic}
+\setcounter{page}{1}
 \section{Motivation}
 \label{sec:motivation}
 
@@ -10,39 +11,36 @@ Whenever we write code, testing is an essential process that cannot be overlooke
 
 This statement underscores the critical role of testing in software development—an endeavour that can be even more important than writing the code itself.
 
-The severity of bugs and vulnerabilities varies significantly based on the application's nature and context. For instance, an offline program has different security considerations than an Internet of Things (IoT) application, such as a smart thermostat, or a web application handling sensitive data globally. Each of these programs can harbour security issues, necessitating extensive testing to identify potential flaws. As software becomes increasingly complex, catching all bugs becomes increasingly challenging. Consequently, automating this time-consuming testing process is a highly sought-after goal, leading to numerous approaches aimed at achieving it.
 
-Dynamic Symbolic Execution \gls{dse} is one such approach that has gained traction for automating test coverage and uncovering software bugs and vulnerabilities. While DSE can be traced back to the early 1970s, with foundational work by \citet{boyer_selectformal_1975} and \citet{king_new_1975}, it has recently experienced a resurgence. Numerous frameworks for DSE have been developed, each with its advantages and limitations. Among them, ExpoSE, as described in \citet{loring_expose_2017}, stands out for its strength in string manipulation and reasoning—critical features when testing web applications, where data is predominantly transmitted in text-based formats and requires string operations such as checking whether a string matches a certain pattern or splitting it into multiple parts.
+The severity of bugs and vulnerabilities varies significantly based on the application's nature and context. For instance, an offline program has different security considerations than an Internet of Things (IoT) application, such as a smart thermostat, or a web application handling sensitive data globally. Each of these programs can harbour security issues, necessitating extensive testing to identify potential flaws. As software becomes increasingly complex, catching all bugs becomes increasingly challenging. 
+
+
+Consequently, automating this time-consuming testing process is a highly sought-after goal, leading to numerous approaches aimed at achieving it.
+Dynamic Symbolic Execution (DSE) is one approach that has gained traction for automating test coverage and uncovering software bugs and vulnerabilities. While DSE can be traced back to the early 1970s, with foundational work by \citet{boyer_selectformal_1975} and \citet{king_new_1975}, it has recently experienced a resurgence. Numerous frameworks for DSE have been developed, each with its advantages and limitations. Among them, ExpoSE, as described in \citet{loring_expose_2017}, stands out for its strength in string manipulation and reasoning critical features when testing web applications, where data is predominantly transmitted in text-based formats and requires string operations such as checking whether a string matches a certain pattern or splitting it into multiple parts.
+
+
 
 \newpage
 
 \section{Research questions}
 \label{sec:research-questions}
 
-This thesis aims to apply \gls{dse} using the ExpoSE framework to test web applications and to answer the following research questions:
+This thesis aims to apply DSE using the ExpoSE framework to test web applications and to answer the following research questions:
 
-RQ1: Is it possible to reliably end-to-end fuzz test a web application using Dynamic Symbolic Execution in ExpoSE?\\
-RQ2: Can it be used to reliably find security issues?
+\begin{itemize}
+    \item RQ1: Is it possible to reliably end-to-end fuzz test a web application using Dynamic Symbolic Execution in ExpoSE?
+    \item RQ2: Can it be used to reliably locate security issues?
+\end{itemize}
 
-Given that RQ2 is contingent on the findings of RQ1, if the answer to RQ1 is a definitive “NO”, then further investigation into RQ2 becomes unnecessary. A testing methodology that fails to assess a web application's general functionality cannot effectively be used to discover specific security vulnerabilities. Conversely, if RQ1 yields a positive result, we will explore whether ExpoSE can effectively uncover security-related issues and bugs.
-
-In this thesis, special attention will be given to vulnerabilities such as Cross-Site Scripting (XSS), which is a prevalent issue in web applications. XSS attacks can allow malicious actors to execute scripts in the context of a user's browser, potentially leading to unauthorized actions, data theft, and other security concerns. Given ExpoSE's robust support for string operations, we believe it is well-suited to identify such string-based attacks.
+We tested two web applications and our results indicated that it is indeed possible to end-to-end fuzz test a web application with DSE in ExpoSE, which allowed us to proceed to answer RQ2.
+In this thesis, we paid special attention to vulnerabilities known as Cross-Site Scripting (XSS), which is a prevalent issue in web applications. XSS attacks can allow malicious actors to execute scripts in the context of a user's browser, potentially leading to unauthorized actions, data theft, and other security concerns. Given ExpoSE's robust support for string operations, we believed it is well-suited to identify such string-based attacks, which turned out to be true, answering RQ2 successfully.
 
 \section{Structure}
 \label{sec:thesis-structure}
-This thesis is structured as follows. First, we will explain the terminology and the theories this thesis builds on in \autoref{chapter:background}. 
-
-Following this, \autoref{chapter:techstack} provides a description of ExpoSE and its technologies, along with an overview of its usage.
-
-Next, \autoref{chapter:implementation} presents the necessary changes for ExpoSE to function and outlines our approach to the problem addressed in this thesis. This chapter also offers a minimal answer to RQ1.
-
-Expanding on this foundation, \autoref{chapter:express} delves into the application of a JavaScript framework, detailing the model created for it and explaining its necessity. 
-
-The adoption of this model in a web application is discussed in
-\autoref{chapter:application}. 
-
-An evaluation of our approach follows in  \autoref{chapter:evaluation},  where we test the model within a web application and provide an answer to our research question, reflecting on whether we have met our goals.
-
-\autoref{chapter:related-work} will offer a review of related work in the field of symbolic execution, highlighting significant research and methodologies relevant to our study. We will discuss prior studies that have tackled similar problems, comparing and contrasting their findings with our own. 
-
-Finally, we will conclude the thesis in \autoref{chapter:conclusion}, presenting an overview of what we achieved and learned.
+This thesis is structured as follows. First, we will explain the terminology and the theories this thesis builds on. 
+Following this, we proceed to provide a description of ExpoSE and its technologies, along with an overview of its usage.
+Next, we present the necessary changes for ExpoSE to function and outline our approach to the problem addressed in this thesis. This chapter also offers a minimal answer to RQ1.
+Expanding on this foundation, we will delve into the application of a JavaScript framework, detailing the model created for it and explaining its necessity. 
+An evaluation of our approach follows,  where we test the model within a web application and provide an answer to our research question, reflecting on whether we have met our goals.
+We then will offer a review of related work in the field of symbolic execution, highlighting significant research and methodologies relevant to our study. 
+Finally, we will conclude the thesis, presenting an overview of what we achieved and learned.

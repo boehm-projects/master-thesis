@@ -40,7 +40,7 @@
 \definecolor{mybluei}{RGB}{124,156,205}
 \definecolor{myblueii}{RGB}{73,121,193}
 \definecolor{mygreen}{RGB}{202,217,126}
-
+\usepackage{pgfplots}
 \pgfdeclarelayer{background}
 \pgfsetlayers{background,main}
 
@@ -58,9 +58,7 @@
 \def\lstfloatautorefname{Listing}
 
 \usepackage{enumitem}
-\usepackage{glossaries}
-\input{pages/end/glossary}
-\makeglossaries
+\usepackage{emptypage}
 
 % ---------------------------------------------- %
 \pretitle{}
@@ -86,7 +84,7 @@
 % ---------------------------------------------- %
 \begin{document}
 
-
+\pagenumbering{gobble}
 \begin{center}
     \uppercase{Ludwig-Maximilians-Universität München}
 \end{center}
@@ -142,14 +140,20 @@
 
 \newpage
 \tableofcontents
-\newpage
-
-\setcounter{page}{1}
+\microtypesetup{protrusion=false}
+\listoffigures{}
+\listoftables{}
+\lstlistoflistings
+\microtypesetup{protrusion=true}
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[R]{\thepage}
+\fancyhead[LO]{\leftmark}
+\fancyhead[RO, LE]{\thepage}
+\fancyhead[RE]{\rightmark}
 \renewcommand{\headrulewidth}{0pt}
-\raggedbottom
+
+
+
 % ---------------------------------------------- %
 \chapter{Introduction}
 \label{chapter:introduction}
@@ -161,14 +165,13 @@
 \input{pages/introduction/background}
 
 % ---------------------------------------------- %
-\chapter{Techstack}
+\chapter{Dynamic Symbolic Execution with ExpoSE}
 \label{chapter:techstack}
 \input{pages/introduction/Techstack}
 
 % ---------------------------------------------- %
-\chapter{Implementation}
+\chapter{Testing Contemporary Web Applications}
 \label{chapter:implementation}
-
 \input{pages/methodology/implementation}
 
 % ---------------------------------------------- %
@@ -177,8 +180,6 @@
 \input{pages/methodology/express}
 
 % ---------------------------------------------- %
-
-
 \chapter{Evaluation}
 \label{chapter:evaluation}
 \input{pages/eval/evaluation}
@@ -211,12 +212,6 @@
 
 % ---------------------------------------------- %
 
-\microtypesetup{protrusion=false}
-\listoffigures{}
-\listoftables{}
-\lstlistoflistings
-\listofalgorithms
-\microtypesetup{protrusion=true}
 
-\printglossaries
+
 \end{document}

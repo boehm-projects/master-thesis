@@ -18,6 +18,7 @@
 \ProvidesClass{plai}[2023/12/01 PLAI Document Class]
 
 \RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
 
 \def\Snospace~{\S{}}
 
@@ -59,10 +60,13 @@
 
 % Define the document class based on the selected option
 
-\LoadClass[a4paper,11pt, twoside, openright]{report} % Use 'report' for thesis
+\LoadClass[
+a4paper,11pt, twoside, openright
+]
+{report} % Use 'report' for thesis
 
 % Set the page margins
-\RequirePackage[left=30mm,right=30mm,top=30mm,bottom=40mm,binding offset=15mm, \nouse{showframe}]{geometry}
+\RequirePackage[left=30mm,right=30mm,top=30mm,bottom=40mm,binding offset=10mm, \nouse{showframe}]{geometry}
 
 \RequirePackage{libertine}
 \RequirePackage{inconsolata}
@@ -95,7 +99,10 @@
 
 \RequirePackage{listings}
 
-
+\RequirePackage{textcomp}
+ 
+\newcommand{\odblq}{``}
+\newcommand{\cdblq}{''}
 % General listings style
 \lstset{
     basicstyle=\footnotesize\ttfamily,
@@ -104,6 +111,8 @@
     breaklines=false,
     showstringspaces=false,
     tabsize=2,
+    floatplacement=t
+    columns=fullflexible,
     keywordstyle=\bfseries\color{lmublue},
     emphstyle=\color{lmublack},
     stringstyle=\color{lmured},
@@ -123,7 +132,14 @@
     aboveskip=0pt,
     belowskip=0pt,
     linewidth=.99\textwidth,
+    mathescape=false,
+    upquote=true, 
+    literate=
+        {``}{\odblq}{1}
+        {''}{\cdblq}{1},
 }
+
+
 
 % Custom title in bold
 \RequirePackage{titling}

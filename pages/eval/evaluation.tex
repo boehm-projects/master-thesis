@@ -6,127 +6,281 @@ We had two goals for this endeavour: Answering whether ExpoSE can be used to rel
 
 As testing a web application for security issues depends on ExpoSE being able to reliably end-to-end fuzz test a web application, we had to achieve this goal first. After all, should it not be possible to do so, locating security issues is merely dependent on luck, which effectively leaves it unsuitable for its intended purpose. 
 
-To evaluate whether we achieved the first goal with our express model, we use the existing test framework of ExpoSE. With the slight modification of instead of running the various test files, we used it to run our test server multiple times in parallel, trying to verify that ExpoSE generates inputs that consistently find all available routes and branches within.
+To evaluate whether we achieved the first goal with our express model, we use the existing test framework of ExpoSE. With the slight modification that, instead of running the various test files, we used it to run our test server multiple times in parallel, trying to verify that ExpoSE generates inputs that consistently find all available routes and branches within.
 
 
-For the purpose of testing our model and the capabilities of ExpoSE regarding its applicability to web applications, we first developed one web application ourselves, we will call it project A, and to verify its compatibility with real-world projects, we took an existing GitHub project\footnote{https://github.com/rwieruch/node-express-server-rest-api}, that worked within the limits of ExpoSE stated in \autoref{sec:limits}. This means, it was written with the syntax available in ES6 and could easily be stripped of external packages. In this case, the only external package was the CORS package, used for cross-origin resource sharing. And it did not rely on any external database. Hence, it was the perfect example project for our needs. Besides removing the package, we modified the project for use with ExpoSE as presented in \autoref{sec:nec-mods}. This is our project B.
+For the purpose of testing our model and the capabilities of ExpoSE regarding its applicability to web applications, we first developed one web application ourselves (project A), and to verify its compatibility with real-world projects, we took an existing GitHub project\footnote{https://github.com/rwieruch/node-express-server-rest-api}, that worked within the limits of ExpoSE stated in \autoref{sec:limits} (project B). This means, it was written with the syntax available in ES6 and could easily be stripped of external packages. In this case, the only external package was the CORS package, used for cross-origin resource sharing. It also did not rely on any external database. Hence, it was the perfect example project for our needs. Besides removing the package, we modified the project for use with ExpoSE as presented in \autoref{sec:nec-mods}. This is our project B.
 We do not force ExpoSE to generate an input by giving assertions about the form and content of the data, to keep the discovery of paths to the framework. This is to ensure that the normal program flow happens, thus representing a normal execution. 
 
-Project A has a total of six routes (\textsc{GET, POST, PUT, PATCH, DELETE}, with \textsc{PATCH} and one \textsc{GET} being parameterized routes. It uses three middleware layers for pre-processing a request, and one layer for post-processing the response. Behind each route exists a controller, a service, and a (semi functional) database mock-up, to simulate depth. The parametrized routes are the only which have corresponding functions in the mock database, as they cover generating inputs based on the entries and the conditions for retrieving and updating these. The client used for this application is bare-bones. All it does is generate a request and receive a response, comparing the input with the output. The client is also the only place which holds a reference to the symbolic execution interface \lstinline{S$}.
+Project A has a total of six routes, \lstinline[language=JavaScript]+GET, POST, PUT, PATCH, DELETE+, with \lstinline[language=JavaScript]+PATCH+ and one \lstinline[language=JavaScript]+GET+ 
+being parameterized routes. It uses three middleware layers for pre-processing a request, and one layer for post-processing the response. Behind each route exists a controller, a service, and a database mock-up, to simulate depth. The parametrized routes are the only which have corresponding functions in the mock database, as they cover generating inputs based on the entries and the conditions for retrieving and updating these. The client used for this application is bare-bones. All it does is generate a request and receive a response, comparing the input with the output. The client is also the only place which holds a reference to the symbolic execution interface 
+\lstinline[language=JavaScript]{S$}. 
 
 Project B has a total of eight routes, with 4 of them using path parameters.
 It also uses one middleware layer for pre-processing a request, and one layer for post-processing the response. The routing, however, is split into three different routers, which tests our express model's capabilities to work with multiple routers. In this project, the routes hold the executing functions directly. It has no database, but uses objects to store the data. Similar to project A, the client is also bare-bones with the only purpose to generate requests, and check the output. 
 
-Due to its heavy memory size requirements, and the fact that it can make use of multicore processing, we ran ExpoSE for our tests on a machine with an AMD EPYC 9654 with 96 cores and 1.536 GB of Memory in courtesy of the \gls{plai} Chair.
+The requests for both projects encompass a symbolic number, accessing an array holding strings with HTTP methods, a symbolic string for the URL and an object with concrete field namespaces holding symbolic values.
+
+
+Due to its heavy memory size requirements, and the fact that it can make use of multicore processing, we ran ExpoSE for our tests on a machine with an AMD EPYC 9654 with 96 cores and 1536 GB of Memory in courtesy of the PLAI Chair.
 
 
 \section{Results}
 \label{sec:results}
 
-To validate our underlaying model, we created project A in such a manner that all available methods of adding middleware to the server, of adding routes directly to the server, and of adding a router object to the server were covered. 
+To validate our underlaying model, we created project A in such a manner that all available methods were covered: adding middleware, adding routes, and adding router objects.
 
-We then split our tests into two categories: the first category is the general testing, and the second category entailed the specific tests whether it is possible to discover security related issues.
+We split our tests into two categories: general testing, and specific tests for testing whether it is possible to discover security related issues.
 
 
- We did not aggregate the line coverage while testing, as we deemed a percentage of covered code as not significant and the generated coverage statistics did not seem accurate, as a script that should have shown 100\% line coverage was measured at 96\% — which is highly unlikely in a script with 6 lines of code.
 
 \subsection{General Test Result Project A}
-
-The goal for this project was to build a test that covers all parts of the express model.
-Testing it with ExpoSE yielded the results as presented in \autoref{tab:results-project-one}. 
-To test the reliability of the model, we ran 100 iterations.
-In these 100 iterations, ExpoSE generated a total of 1207 inputs, with the minium of found paths being 0 and a maximum of 21, with an average of 19.2 and a median of 16. The outlier with 0 found paths happened due to an unexpected crash of the execution. Almost all iterations generated errors, with an average of  for some inputs, but when replaying ExpoSE with these inputs, we found that none of them were actual errors, as the execution ran without errors.
-The minimum time one iteration took was 10s, the maximum was 3612s, or 60 minutes, with an average of 2860s.
-The most interesting number of the results is, that only 13 inputs were generated that matched the basic \lstinline{GET /user} route, whereas \lstinline{GET /user/:id} was discovered by almost all runs.
-
+With this project, we aimed at building a test that covers all parts of the express model.
 
 On a singular run basis, we analysed the process in depth.
-Our analysis showed, that ExpoSE can not only reason and generate inputs that match a route, but manages to generate path conditions based on our mock database (an array containing objects), covering both cases of whether an entry exists or not. The requests \lstinline{GET /user/0} and \lstinline{GET /user/2222} are generated inputs, with the former retrieving the user in the object and the latter returning an error response. This also was true of for the PATCH requests, where the input \lstinline{PATCH /user/0} triggered the update of an already existing entry, and \lstinline{PATCH /user/22} returned the expected an error response.
-
-Interestingly, running ExpoSE just once instead of multiple times generated up to 25 paths (out of a test with 10 executions), almost 20\% higher than the run with the maximum number of paths generated in the stress test. Anecdotally, these executions also found all paths without fail (the concrete paths generated can be seen in \textbf{APPENDIX TODO}.
-
+Our analysis indicated that ExpoSE can only reason and generate inputs that match a route, but cannot generate path conditions for the route based on our mock database (an array containing objects). It covered the cases, whether an entry exists or not solely by chance. The requests \lstinline[language=JavaScript]{GET /getWithId/0} and \lstinline[language=JavaScript]{GET /getWithId/2222} are generated inputs, with the former retrieving the user in the object and the latter returning an error response. This also was true for the PATCH requests, where the input \lstinline[language=JavaScript]{PATCH /patch/0} 
+triggered the update of an already existing entry, and \lstinline[language=JavaScript]{PATCH /patch/22} returned the expected an error response.
 
 
 
-We also analysed the resource usage of a thread of a singular run, and noticed that the system call \lstinline{smt::context::bounded_search()  (in libz3.dylib)} was the cause of the prolonged duration. This is expected behaviour, as Z3 has to solve the path conditions created and find suitable inputs  - or, timeout when it does not find a valid input in a provided timeframe, in our case 3600s, which explains the maximum time taken for our tests. This system call is also responsible for the notable memory usage.
+To test the reliability of the model, we executed 100 iterations, yielding  the results as presented in \autoref{tab:results-project-one}. 
+In these 100 iterations, ExpoSE generated a total of 1931 inputs, representing unique paths within the iteration, with the minium of found paths being 4 and a maximum of 25. On average, it generated 19.3 inputs, with  a median of 20.5. Almost all iterations generated errors, with an average of 2.66 per iteration, but when replaying ExpoSE with these inputs, we found that none of them were actual errors, as the execution ran without errors.
+It did, however, consistently run into the aforementioned timeout of ExpoSE, which is 30 minutes, or 1800 seconds, for a test case.
 
+The most interesting number of the results is that only 7 inputs were generated that matched the basic \lstinline[language=JavaScript]{GET /get} 
+route, whereas \lstinline[language=JavaScript]{GET /getWithId/:id} were discovered by almost all runs. 
+If we look at the run with the most paths, we can observe the inputs and their count of paths per methods in \autoref{lst:project-a-inputs}.
+\begin{lstlisting}[language=JavaScript, float, label={lst:project-a-inputs}, caption={[Generated Inputs for Project A]The inputs generated for project A, listed by the HTTP method, grouped by the router.}]
+"GET":      "/":1, 
+            "":1, 
+            "/get":1, 
+            "ABCDEFGHJKL ":1,
+            "/getWithId/222":1,
+            "/getWithId/0":1
+            
+"POST"      :"":1,
+            "?":1,
+            "/post":2
+            
+"PUT":      "":1, 
+            "?":1, 
+            "/put":1
+            
+"PATCH":    "":1, 
+            "?":1, 
+            "/patch/2":1
+            
+"DELETE":   "":1, 
+            "?":1, 
+            "/delete":1
+            
+"A":        "":1,
+            "?":1
+"?":        "":1,
+            "?":1
+"":         "":1,
+            "?":1
+\end{lstlisting}
+This run almost completely explored the entire web application, except for updating an existing entry with 
+\lstinline[language=JavaScript]+/patch/0+
+, for which ExpoSE cannot create a path condition without an explicit check. 
+On the other hand, we did observe runs that almost completely failed to generate inputs that cover routes, as the only route it did find was the base route \lstinline+"/"+.\\
+\lstinline[language=JavaScript]+"GET":{"/":1},"POST":{"":1},"PUT":{"?":1},"?":{"?":1}+ were the only inputs generated. 
+We could not reproduce this issue, but we assume it happened due to an unhandled error of Z3, as neither ExpoSE nor Jalangi created an error. 
 
+\begin{table}[t]
+    \centering
+    \begin{tabular*}{\linewidth}{c|c|c}
+        \begin{tabular}[t]{lc}
+    	\toprule
+        Route  & Count\\
+        \midrule
+        \lstinline+GET /get+    & 7     \\
+    	  \lstinline+POST /post+ & 96   \\
+    	\lstinline+PUT /put+    & 63    \\
+        \lstinline+PATCH /patch/:id+   & 41  \\
+        \lstinline+DELETE /delete+ & 96  \\
+        \lstinline+GET /getWithId/:id+  & 51  \\                    
+    	\bottomrule
+        \end{tabular}
+& 
+       \begin{tabular}[t]{ccc}
+       	\toprule
+                & Paths & Runtime \\
+            \midrule
 
-\begin{table}[ht]
-	\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lccccccc}
-		\toprule \multicolumn{2}{c}{Routes}                                          &        &       & Paths & Runtime           & \multicolumn{2}{c}{Errors} \\
-		\midrule Route                                                                 & Count & Min   & 0      & 10s                       & False & 121  \\
-		\cmidrule(r){1-2}\cmidrule(lr){3-3}\cmidrule(lr){6-6} \lstinline+GET /user+    & 13    &       &         &                           &       &    \\
-		\cmidrule(r){1-1} \lstinline+POST /user+                                       & 75    & Max   & 21      & 3612s                     & True  & 11 \\
-		\cmidrule(r){1-1}\cmidrule(lr){3-3}\cmidrule(lr){6-6} \lstinline+PUT /user+    & 63     &       &         &                           &       &    \\
-		\cmidrule(r){1-1} \lstinline+PATCH /user/:id+                                  & 53     & \o{}  & 12      & 2860.65s                     & \o{}   & 1,32 \\
-		\cmidrule(r){1-1}\cmidrule(lr){3-3}\cmidrule(lr){6-6} \lstinline+DELETE /user+ & 71     &       &         &                           &        \\
-		\cmidrule(r){1-1} \lstinline+GET /user/:id+                                    & 90    & Total &  1207     &                           & Total &  132  \\
-		\cmidrule(r){1-1}\cmidrule(lr){3-3}\cmidrule(lr){6-6}
+        Min     &4      & 7s     \\
+        Max     &   25      & 3611s       \\
+        Median  &  20.5  &   1808s        \\   
+        Total   &    1931     &   \\
+        \bottomrule
+        \end{tabular} 
+&     
 
-\bottomrule
-	\end{tabular*}
+        \begin{tabular}[t]{cc}
+        \toprule
+    	\multicolumn{2}{c}{Errors} \\
+            \midrule
+
+            False & 266 \\
+            True  & 0 \\
+            Total &  266  \\
+    	    \bottomrule
+            \end{tabular}
+\\
+        \end{tabular*}
 	\caption[General results of project A]{ Results of 100 ExpoSE runs on project A.
-	The column routes for project A are represented by their HTTP method and URL, with
-	a count across all iterations. The columns paths and runtime list the minimum,
-	the maximum, and the average of paths generated and time taken respectively. The
-	column errors depict the number of errors generated by ExpoSE, of which we
+	The first major column is listing the routes with their HTTP method and URL, with a count across all iterations. The second major column containing the columns paths and runtime lists the minimum, the maximum, and the median of paths generated and time taken respectively. The last major column errors depict the number of errors generated by ExpoSE, of which we
 	verified whether they were “true” errors or false positives. }
 	\label{tab:results-project-one}
 \end{table}
 
+
+
 \FloatBarrier
 \subsection{General Test Result Project B}
 
-Since we designed project A specifically to verify our express model, it was unclear whether its functionality was due to the correctness of the model itself or because project A implemented our model rather than an Express.js server. To verify the compatibility, we also executed ExpoSE with project B 100 times.
+Since we designed project A specifically to verify our express model, it was unclear whether its functionality was due to the correctness of the model itself or because project A implemented our model rather than an Express server. To verify the compatibility, we also executed ExpoSE with project B 100 times.
 The results can be found in \autoref{tab:results-project-two}.
 We split the found routes into their respective routers for clarity purposes. 
+In the executed 100 iterations, ExpoSE generated a total of 2053 paths, with the minium of found paths being 1 and a maximum of 24, and an average of 20.53 and a median of 21. 
+Our results showed, that not even the run with the maximum of discovered paths fully explored the web application, as it did not discover the path
+\lstinline[language=JavaScript]{GET /messages/:id} as can be seen in \autoref{lst:project-b-inputs}
+\begin{lstlisting}[language=JavaScript, float, label={lst:project-b-inputs}, caption={[Generated Inputs for Project B]The inputs generated for project B, listed by the HTTP method, grouped by the router.}]
+"GET":      "/":1,
+            "":1,
+            "/users/":1,"/users/22":1,
+            "/session/":1,"/messages/":1
+            
+"POST":     "":1,
+            "?":1,
+            "/messages/":2
+            
+"PUT":      "":1,
+            "?":1,
+            "/messages/22":1
+            
+"PATCH":    "":1,
+            "?":1
+            
+"DELETE":   "":1,
+            "?":1,
+            "/messages/22":1
+            
+"":         "":1,
+            "?":1,
+"?":        "":1,
+            "?":1,
+" ":        "":1,
+            "?":1
+\end{lstlisting}
+
+The reason the path \lstinline[language=JavaScript]{GET /messages/:id} 
+did not even once get executed is likely because Z3 did not find a satisfiable input for the  path in time.
+
+Almost all iterations generated errors, with an average of 3.11 per run, but when replaying ExpoSE with these inputs, we found that only 41 of them were actual errors, which was an undefined reference error within the server we took from GitHub, showing that ExpoSE can find bugs and unhandled errors.
+The minimum time one iteration took was 7s, the maximum was 5404s, or 90 minutes, with an average of 2860s a median of 1808s.
 
 
-
-\begin{table}[ht]
-\begin{tabularx}{\linewidth}{@{\extracolsep{\fill}}llcccccc}
-	\toprule \multicolumn{3}{c}{Routes}                                          &                         & Paths & Runtime & \multicolumn{2}{c}{Errors} \\
-	\midrule Router                                                              & Route                   & Count & Min     & 12                        & 30s   & False&  \\
-    \cmidrule(lr){1-3} \cmidrule(lr){4-4} \cmidrule(lr){7-7} \lstinline+message+ & \lstinline+GET /+       & 1     &         &                           & 3000s &      &  \\
-	\cmidrule(r){1-1} \cmidrule(lr){2-2}                                         & \lstinline+GET /:id+    & 2     &   Max   &                           &       & True &  \\
-	\cmidrule(lr){2-2} \cmidrule(lr){4-4} \cmidrule(lr){7-7}                     & \lstinline+POST /+   & 3     &         &                           &       & &  \\
-	\cmidrule(lr){2-2}                                                           & \lstinline+DELETE /:id+ &       &   \o{}   &                           &       & \o{}   &  \\
-    \cmidrule(lr){2-2}\cmidrule(lr){4-4}\cmidrule(lr){7-7}                       & \lstinline+PUT /:id+    &       &         &                           &       &       &  \\
-    \cmidrule(lr){2-2}
-	\lstinline+session+                                                          & \lstinline+GET /+       & 4     & Total   &                           &       &Total &  \\
-	\cmidrule(r){1-1}\cmidrule(lr){2-2}\cmidrule(lr){4-4}\cmidrule(lr){7-7}
-                                                                \lstinline+user+ & \lstinline+GET /+       & 5     &         &                           &       &       &  \\
-	\cmidrule(r){1-1}\cmidrule(lr){2-2}                                          & \lstinline+GET /:id+    &       &         &                           &       &       &  \\
-	\bottomrule
-\end{tabularx}
-\caption[General results of project B]{Results of 100 ExpoSE runs on project B.
-	The column routes for project B are represented by their router, the HTTP method and URL, with
-	a count across all iterations. The rest is equal in structure to \autoref{tab:results-project-one} }
+\begin{table}[t]
+    \centering
+    \begin{tabular*}{\linewidth}{c|c|c}
+       \begin{tabular}[t]{llc}
+            \toprule
+                        Router          & Route  & Count\\
+            \midrule
+            \lstinline+message+         & \lstinline+GET /+       & 19    \\
+                                        & \lstinline+GET /:id+    & 0   \\
+                                        & \lstinline+POST /+      & 100   \\
+    	                                & \lstinline+DELETE /:id+ &  46   \\
+                                        & \lstinline+PUT /:id+    &  18 \\
+            \lstinline+session+         & \lstinline+GET /+       & 70  \\
+            \lstinline+user+            & \lstinline+GET /+       & 100 \\                                  
+                                        & \lstinline+GET /:id+    & 64   \\
+            \bottomrule
+        \end{tabular}
+  & 
+        \begin{tabular}[t]{ccc}
+            \toprule
+                    & Paths    & Runtime \\
+            \midrule
+            Min     &  1       & 6s   \\
+            Max     &   24     & 5404s       \\
+	        Median  &  21      & 1808s        \\
+            Total   &   2053   &   \\
+            \bottomrule
+        \end{tabular} 
+&     
+        \begin{tabular}[t]{cc}
+            \toprule
+            \multicolumn{2}{c}{Errors} \\        
+            \midrule
+            False   &   270 \\
+            True    &   41 \\
+            Total   &   311  \\
+            \bottomrule
+        \end{tabular}
+\\
+    \end{tabular*}
+\caption[General results of project B]{Results of 100 ExpoSE runs on project B. The structure is equal in structure to \autoref{tab:results-project-one}, with the addition of the router a route is attached to in the first column. }
 \label{tab:results-project-two}
 \end{table}
-
+\vspace{1cm}
+A notable result from both projects has been that the executions almost always required a multiple of 1800s, which corresponds with the timeout of ExpoSE per input.
+This led us to analyse the resource usage of a thread of a singular run, and noticed that the system call \lstinline{smt::context::bounded_search()  (in libz3.dylib)} was the cause, as it calls a \lstinline{final_check} function in Z3, which relies on the deleted callbacks described in \autoref{sec:fwd-z3}. As it is a recursive call, it kept calling itself with the same parameter, leading to the eventual test timeout of ExpoSE.  Reverting our changes exacerbated the issue even more, by causing all runs to exhibit the null pointer exception mentioned in \autoref{sec:changes-z3}.
 
 \subsection{Security Vulnerabilities}
 Testing for XSS is on one hand difficult, as there are multiple ways to execute a script in a web browser,
-e.g. sending a message containing the HTML tags \lstinline{<script></script>}, 
-or by embedding an HTML reference \lstinline{href=url}. 
+e.g. sending a message containing the HTML tags \lstinline[language=JavaScript]{<script></script>}, 
+or by embedding an HTML reference \lstinline[language=JavaScript]{href=url}. 
 This diversity complicates the creation of regular expressions that can effectively identify 
 all potential exploits without heavily restricting legitimate user input.
 However, obvious vulnerabilities can be detected through a comparative analysis of input and output.
-If the input and output remain unchanged, especially when containing special characters like “\textless” or “/”,
-this may indicate that the system is susceptible to script injection, allowing for the execution of code on a different machine.
+If the input and output remain unchanged, especially when containing special characters like “\textless” or “/”, this may indicate that the system is susceptible to script injection, allowing for the execution of code on a different machine. 
+We tested with focus on persistent XSS. For testing, we reduced the test server down to one route only, as we already knew that finding a route poses no problem. 
+We first tested the \textsc{POST} request, sending data to the server.
 
-%An SQL injection is always then possible, when a server uses the naive method of string concatenation.
-%The query \lstinline{q = "INSERT INTO Students VALUES ('" + FName.Text + "', '" + LName.Text + "')";} is an example for this naive query generation, as any input for FName.Text and LName.Text is taken verbatim, which opens the query database injections. If a malicious attacker used \lstinline{Robert'); DROP TABLE STUDENTS; --) } for FName.Text, the query would execute two statements: \lstinline{INSERT INTO Student Values ('Robert');} and \lstinline{DROP TABLE STUDENTS;}. First, these queries insert the value into the database, and then delete the table.  
+We used three input fields for the client: “name”, “email”, and “phone”.
+As ExpoSE does not generate an input with a special character, we added on the receiving client side for each input field a check, whether a \lstinline[language=JavaScript]{<} and \lstinline[language=JavaScript]{>} is contained in the data we sent over the server. On the server side, we added sanitization for the “phone” input, replacing the special characters with their respective HTML representations \lstinline[language=JavaScript]+&lt+
+and \lstinline[language=JavaScript]+&gt+. We had to limit the input to these two characters, as the path conditions exploded exponentially with each replacement. We then compared the input with the output, whether it is equal or modified.
 
-\section{Peculiarities}
+This resulted in the following list of generated inputs after 10 iterations:
+
+\begin{minipage}{1.0\textwidth}
+\begin{itemize}
+    \item Names: \lstinline[language=JavaScript]+name, ?, < >, C< >+
+    \item Emails: \lstinline[language=JavaScript]+name@name,?, < >+
+    \item Phone: \lstinline[language=JavaScript]+ 089123,? ,>,>A<> <B,DEFC,>A< >B, A<B, BCD, A+
+\end{itemize}
+
+with these outputs:
+\begin{itemize}
+    \item Names: \lstinline[language=JavaScript]+name, ?, < >, C< >+
+    \item Emails: \lstinline[language=JavaScript]+name@name,?, < >+
+    \item Phone: \lstinline[language=JavaScript]+ 089123,?, &gt, &gtA&lt&gt &ltB, DEFC, &gtA&lt &gtB, A&ltB, BCD, A+
+\end{itemize}
+\end{minipage}
+
+
+In these inputs, the first element represents our seed input, the second element \lstinline+?+ represents an uncertain input, and finally, the inputs generated after ExpoSE encountered the check for whether a \lstinline{<} and \lstinline{>} is contained. As is apparent, the unsanitized inputs always satisfied the check. The sanitized input, however, varied in its input. While ExpoSE kept on trying inputs with the special characters — it is, after all, the only character on the path conditions — it did also create different inputs. 
+This was a test whether ExpoSE could be used to test a \textsc{POST} request and offer insights about the server-side input validation and sanitization. 
+We subsequently tested the behaviour of a \textsc{GET} request that returns content containing the selected characters, which had already been stored in the database as part of an object within an array. This test did not yield successful results, as anticipated. Although the request was successful, even with client-side checks added to the path conditions based on the expected content, ExpoSE is unable to introduce path conditions derived from the contents of an object within an array. This highlights the constraints of ExpoSE in handling certain data structures and scenarios effectively.
+
+
+
+
+
+
+
+
+\section{Considerations for Development with ExpoSE}
 \label{sec:peculiarities}
 While testing these web applications, we encountered multiple peculiarities, which should be considered when developing a program that is testable with ExpoSE.
-\subsection{String Replace and other recursive symbolic operations}
-When we implemented a route that was to simulate a request in which the input was sanitized and every special character got replaced by its associated HTML escape character, we discovered that the string method “replace” reduced the execution speed to a crawl, due to its implementation as a recursive call.
+
+\subsection{Recursive Symbolic Operations}
+When we implemented a route to simulate a request in which the input was sanitized and every special character got replaced by its associated HTML escape character, we discovered that the string method “replace” reduced the execution speed to a crawl, due to its implementation as a recursive call.
 While this is not an issue with concrete values, it caused the path condition to grow excessively for symbolic expressions. Before the operating system decided to halt the process, we reached as high as half a terabyte of written memory before the process stopped. For testing purposes, we only allowed two
-characters to be sanitized \textit{\textless} and \textit{\textgreater}, and limited the length of the input string. 
+characters to be sanitized: \textit{\textless} and \textit{\textgreater}, and limited the length of the input string. 
 
 
 \subsection{Implicit Conditionals}
@@ -135,7 +289,11 @@ If re.Match is used, an explicit check has to follow; otherwise no path is creat
 This means, for optimal test coverage, it is imperative to write conditionals explicitly. 
 
 \subsection{String to Number Conversion}
-While testing the parameterized routes, we noticed that the extracted values were not used for creating path conditions, as the expected conditions were built with integer operations in mind. The extracted valued, however, are strings. Because of this, we noticed that ExpoSE does not support string to number conversion. It does, however, convert strings into numbers when used with the unary operations \lstinline{-} and \lstinline{+}, leading us to a somewhat hacky implementation \lstinline{(+X)} which adds the path condition \lstinline{((to_real (str.to_int X)} for the variable \lstinline{X}. This could be remedied by implementing a symbolic model of \lstinline{parseInt}
+While testing the parameterized routes, we noticed that the extracted values were not used for creating path conditions, as the expected conditions were built with integer operations in mind. The extracted valued, however, are strings. Because of this, we noticed that ExpoSE does not support string to number conversion. It does, however, convert strings into numbers when used with the unary operations \lstinline[language=JavaScript]{-} and \lstinline[language=JavaScript]{+}, leading us to a somewhat “hacky” implementation 
+\lstinline[language=JavaScript]{(+X)} 
+which adds the path condition \lstinline[language=JavaScript]{((to_real (str.to_int X)} 
+for the variable \lstinline[language=JavaScript]{X}. 
+This could be remedied by implementing a symbolic model of \lstinline[language=JavaScript]{parseInt}.
 
 
 

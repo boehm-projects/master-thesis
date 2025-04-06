@@ -1,8 +1,9 @@
 \chapter*{Abstract}
 
-In this thesis we present an approach to using ExpoSE, a dynamic symbolic execution (DSE) engine, for testing a web application for security issues and general bugs. We set out to answer the questions whether the engine could be used to test a web application in general and afterward whether it could be used to reliably discover any security issues related to cross-site scripting (XSS).
-To explore the possibility, we implemented a plain JavaScript server and, after deeming it possible with the exclusion of the actual transmission of data between client and server, we created an Express.js model to test an existing server.
+As web applications become more complex and prevalent, it has become more important to ensure their security and reliability. This thesis investigates the application of Dynamic Symbolic Execution (DSE) through the ExpoSE framework to automate the testing of web applications. 
+We specifically aim to evaluate whether ExpoSE can effectively identify bugs and security vulnerabilities, particularly Cross-Site Scripting (XSS) attacks.
 
-
-
-\textbf{Keywords}: Testing, Web Application, Dynamic Symbolic Execution, SMT Solver, JavaScript.
+Our approach to testing web applications by merging the client and the server into one entity enables DSE to generate paths not only based on the client's state, but also based on the internals of the server.
+The research encompasses the design and implementation of an Express.js model to facilitate thorough testing of more sophisticated web applications. 
+Through systematic evaluations, we demonstrate ExpoSE's capability to generate inputs that cover application routes and decision paths, effectively revealing both functional issues and security weaknesses. 
+Our findings show that ExpoSE was able to generate unique test cases and find potential vulnerabilities related to input handling and validation.

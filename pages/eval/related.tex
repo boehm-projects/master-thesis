@@ -1,17 +1,16 @@
+As there is a constant strive to find a way to thoroughly test and thereby eliminate the existence of bugs and unwanted behaviour, there are a myriad of papers, each proposing a solution to a subset of the overarching problem of insufficiently well-written and tested code. In this section, we present a selection of these projects and what problem they try to solve.\\
 
+\textbf{ExpoSE} already supported a client-side approach to analyse web applications. \cite{loring_practical_2021} Unlike our approach, however, it is used to modify request headers to discover dynamic resource dependencies, while our approach modifies the request data.\\
 
-As there is a constant strive to find a way to thoroughly test and thereby eliminate the existence of bugs and unwanted behaviour, there are a myriad of papers, each proposing a solution to a subset of the overarching problem of badly written code.  In this section, we present a selection of these projects and what problem they try to solve.\\
-KLEE \cite{cadar_klee_nodate}\\
-EXE \cite{ball_deconstructing_nodate}\\
-SAGE \cite{godefroid_sage_2012}\\
-Black Widow \cite{eriksson_black_2021}\\
-Black Ostrich \cite{eriksson_black_2023}\\
-Mayhem \cite{cha_unleashing_2012}\\
-DART  \cite{godefroid_random_2007}\\
-KUDZU \cite{saxena_symbolic_2010}\\
-\citet{kieyzun_automatic_2009} XSS\\
+\textbf{KUDZU} \cite{saxena_symbolic_2010} is a DSE engine for JavaScript for end-to-end testing web applications, with a similar goal to our research — to find XSS vulnerabilities. Using SMT solving, they generated inputs for the client and solved existing client-side input validation to explore the behaviour of the web application. It relies on static web pages to analyse and has no ability to reason about the internal processing.
 
+\textbf{Black Widow}\cite{eriksson_black_2021} is an input driven black-box web crawler and scanner, which leverages input generation to explore static and dynamic webpages. By filling in input fields with unique strings, and monitoring the response of the web page to these inputs, it can discover possible XSS vulnerabilities, similar to ExpoSE. However, unlike our approach with ExpoSE, it is limited in its input generation due to the inability to reason about the internal processing of the input.  
 
+\textbf{Black Ostrich} \cite{eriksson_black_2023} is an improvement over Black Widow, employing the Ostrich SMT solver \cite{chen_ostrich_nodate} to generate inputs that can satisfy regular expressions found in the client-side input validation, similar to KUDZU. It can find XSS and SQL injections by generating valid inputs that may have malicious data. 
 
 Tackling the path explosion of symbolic execution is a  major part of the recent research.
-\citet{ryan_countering_nodate} try to alleviate this by introducing piece-wise composition, which passes the problem to the SMT solver as chunked independent trees of the complete execution tree, reducing the cost on the dynamic symbolic execution.
+\citet{ryan_sylvia_2023} try to alleviate this by introducing piece-wise composition on a hardware level with the symbolic execution engine \textbf{Sylvia}, which passes the problem to the SMT solver as chunked, independent trees of the complete execution tree, reducing the cost of the dynamic symbolic execution.
+\citet{trabish_chopped_2018} propose the method of \textit{chopped} symbolic execution, which allows the user to select code parts that are uninteresting. Those parts are only then executed, when the test system observed a requirement for them. This has the potential to increase speed in the execution.\\
+
+
+Finally, as Large Language Models and Artificial Intelligence are almost unavoidable these days, it is no wonder that there is research into including these tools into testing. \citet{xu_symbolic_2024} introduced the approach of using ChatGPT 4.0 \cite{openai_chatgpt_2025} for context-based input generation, which yielded an increase in coverage compared to methods using conventional input generation.

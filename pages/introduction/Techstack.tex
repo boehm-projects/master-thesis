@@ -1,8 +1,8 @@
-In this chapter, we will delve into the inner workings of the expoSE framework, what tools it uses and their function within. 
+In this chapter, we will delve into the inner workings of the ExpoSE framework, what tools it uses and their function within. 
 For the following sections, we will use the following small code snippet to explain how the system works. 
 
 
-\begin{lstlisting}[language=JavaScript, float, floatplacement=tbp, caption={A simple program for ExpoSE}, label={lst:expose-sample-program}]
+\begin{lstlisting}[language=JavaScript,float, caption={A simple program for ExpoSE}, label={lst:expose-sample-program}]
 const S$ = require("S$");
 
 
@@ -19,23 +19,22 @@ if (x > 0) {
 
 
 
-\section{Jalangi}
+\section{Jalangi2}
 \label{sec:jalangi}
-The Jalangi2 GitHub page \cite{noauthor_samsungjalangi2_nodate} states: "Jalangi2 is a framework for writing dynamic analyses for JavaScript." , and was first presented by \citet{sen_jalangi_2013}. It is used to instrument the JavaScript code that is to be analysed and provides callbacks for a program to spy onto the execution and shadow the variables.
+The \textbf{Jalangi2} GitHub page \cite{noauthor_samsungjalangi2_nodate} states: "Jalangi2 is a framework for writing dynamic analyses for JavaScript." , and was first presented by \citet{sen_jalangi_2013}. It is used to instrument the JavaScript code that is to be analysed and provides callbacks for a program to spy into the execution and shadow the variables.
 Jalangi2 enables this, by attempting to simplify every execution statement by breaking them down into atoms, which are made up of the functions listed \autoref{tab:jal-fun}, which in turn provide callbacks to hook further into the execution.
 The analysing tool can implement these callbacks in order to gain insight and/or modify the return value.
 
 
 To instrument the code snippet in \autoref{lst:expose-sample-program}, Jalangi2 first transforms the passed code to es6 using Babble, to ensure a consistent syntax. 
-Afterward, Jalangi2 instruments the code using the JavaScript parser "acorn"\footnote{https://github.com/acornjs/acorn} to generate the AST (Abstract Syntax Tree) and then rewrites the code using Jalangi's own operatrions. This creates two files per input: 
+Afterward, Jalangi2 instruments the code using the JavaScript parser "acorn"\footnote{https://github.com/acornjs/acorn} to generate the AST (Abstract Syntax Tree) and then rewrites the code using Jalangi's own operations. This creates two files per input: 
 A \{filename\}\_jalangi.js and a \{filename\}\_jalangi.json. The .js file, contains the instrumented code, similar to \autoref{lst:code-snippet}, along with the static unique instruction identifiers (iids) of each callback as a JSON object, while the .json file only contains the iids.
 
 Although the functions exhibit variation in their parameters, they always include the iid (instruction identifier) as their primary parameter. This identifier serves as a unique reference within a JSON object, which stores an array for each statement. Each array contains critical metadata consisting of the starting line number, the column of the expression on that line, the line number where the expression concludes, and the respective column number associated with the termination of the expression.
 
 
 
- \lstset{basicstyle=\footnotesize}
-\begin{lstlisting}[language=JavaScript, float, floatplacement=tbp, caption={[Instrumented program snippet]Lines 1 and 4 of the program snippet \autoref{lst:expose-sample-program}, instrumented by \texttt{JALANGI2}, with explanation}, label={lst:code-snippet}]
+\begin{lstlisting}[float, language=JavaScript, caption={[Instrumented program snippet]Lines 1 and 4 of the program snippet \autoref{lst:expose-sample-program}, instrumented by \textbf{JALANGI2}, with explanation}, label={lst:code-snippet}]
 J$.N(225, 'S$', S$, 0);             // Init S$
 J$.N(233, 'x', x, 0);               // Init x
 J$.N(241, 'y', y, 0);               // Init y
@@ -44,7 +43,7 @@ var S$ = J$.X1(41,                  // Top level declaration
         J$.F(25,              // Call the function with the follwing parameter:
             J$.R(9, 'require', require, 2),// Read the value of "require"
             0)  (
-                J$.T(17, "S$", 21, false)    // Retrieve the value of the S$ literal
+                J$.T(17, "S$", 21, false)    // Retrieve the value of S$
                 ), S$, 3));
 var x = J$.X1(89,                            // Top level declaration
     J$.W(81, 'x',                            // Write the result of the following:
@@ -54,16 +53,12 @@ var x = J$.X1(89,                            // Top level declaration
                 (J$.T(57,"value", 21, false),// Defines the value of the 
                                              // variable as literal
         J$.T(65, 0, 22, false)),x, 3));      // Retrieve the value "0"
-
-
 \end{lstlisting}
-
-\newpage
-As it is apparent from \autoref{lst:code-snippet}, every assignment can be traced on a granular level, enabling the analyser to know the exact state of a program, at any stage of the execution. If, for example, we wanted to modify, or simply log the value of the multiplier in line 24, we could do so by hooking (accessing the execution process) into the callback function provided for the function T.
-This example, of course, is almost as simple as it can get. This is because JavaScript is known for having expressions that contain multiple callbacks, which in turn may or may not have callbacks themselves, colloquially called “Callback Hell” \cite{max_ogden_callback_2019}. And while an example with a callback would be a better representation of a real program, it would also mean that the instrumented code example be by a magnitude longer, rendering the example impractical (not to mention, \textit{rendering} it on PDF while ensuring its legibility). \\
+Every assignment can be traced on a granular level, enabling the analyser to know the exact state of a program, at any stage of the execution, as depicted in \autoref{lst:code-snippet}. If, for example, we wanted to modify, or simply log the value of the variable “value” in line 11, we could do so by hooking into the callback function provided for the function T in line 16 (accessing the execution process).
+This example, of course, is almost as simple as it can get. This is because JavaScript is known for having expressions that contain multiple callbacks, which in turn may or may not have callbacks themselves, colloquially called “Callback Hell” \cite{max_ogden_callback_2019}. And while an example with a callback would be a better representation of a real program, it would also mean that the instrumented code example be exponentially larger, rendering the example impractical (not to mention, \textit{rendering} it on PDF while ensuring its legibility). \\
 
 
-\begin{table}[h]
+\begin{table}[t]
 \resizebox{\linewidth}{!}{%
 	\begin{tabular}{l|l|l}
     {\lstinline|J$.U           |} & Unary operation                                       & {\lstinline|unaryPre|} and {\lstinline|unary|}                      \\
@@ -104,42 +99,55 @@ This example, of course, is almost as simple as it can get. This is because Java
 \section{SMT Solver Z3}
 \label{sec:z3}
 
-Deciding whether a logical expression is satisfiable, depending on the expression, a difficult process.
+Deciding whether a logical expression is satisfiable, depending on the expression, is a difficult process.
 If we take the simple expression $a = b \land b= c\land c = d \land d \neq e \land e = a$, we can check the satisfiability.
 From $a = b$, we deduce that $a$ and $b$ must have the same value. 
 Since $b = c$, it follows that $c$ is equal to $a$ and $b$. 
 By continuing this pattern, we see that $d$ must also equal $a$, $b$, and $c$. 
 However, the expression $d \neq e$ states that $d$ cannot equal $e$. Since $e = a$, this places $e$ back in the equality chain, leading to a contradiction: $d$ must equal $e$ (since $e = a = b = c = d$), which conflicts with $d \neq e$.
 
-Automating this process of checking for satisfiability is done by a \textit{Boolean Satisfiability Theories} (\gls{sat}) Solver, first introduced by  \citet{davis_computing_1960} as the Davis-Putnam algorithm, enhanced by adding backtracking, developed by \citet{davis_machine_1962}, formerly known as the Davis, Logemann and Loveland Algorithm or DLL, and nowadays usually found as Davis-Putnam-Logemann-Loveland (DPLL)-Algorithm. 
+Automating this process of checking for satisfiability is done by a \textit{Boolean Satisfiability Theories} (SAT) Solver, first introduced by  \citet{davis_computing_1960} as the Davis-Putnam algorithm, enhanced by adding backtracking, developed by \citet{davis_machine_1962}, formerly known as the Davis, Logemann and Loveland Algorithm or DLL, and nowadays usually found as Davis-Putnam-Logemann-Loveland (DPLL)-Algorithm. Notable improvements happened with the introduction of the tool \textbf{GRASP} \cite{silva_grasp_1996}, by adding conflict analysis to the basic backtracking algorithm, allowing non-chronological backtracking in order to solve conflicts. \citet{moskewicz_chaff_2001} introduced a completly new solver, \textbf{CHAFF}, gaining improved performance over previous solvers by employing an advanced search algorithm and general improvements.
 
-As a SAT solver is limited to boolean expressions, research for incorporating decision procedures into formal methods was done by \citet{shostak_algorithm_1978}, \citet{boyer_integrating_1988} and others, laying the foundation for modern \textit{Satisfiability Modulo Theroies}  \gls{smt} Solvers, early on called SAT-based decision procedures.
-Notable improvements happened with the introduction of the tool GRASP \cite{silva_graspnew_nodate}, by adding conflict analysis to the basic backtracking algorithm, allowing non-chronological backtracking in order to solve conflicts. \citet{moskewicz_chaff_nodate} introduced a completly new solver, improving performance drastically.  
-
-
+But as a SAT solver is limited to boolean expressions, research for incorporating decision procedures into formal methods was done by \citet{shostak_algorithm_1978}, \citet{boyer_integrating_1988-1} and others, laying the foundation for modern \textit{Satisfiability Modulo Theories}  (SMT) Solvers, early on called SAT-based decision procedures. \citet{nieuwenhuis_solving_2006} introduced the approach of a generalized SMT solver DPLL(T). This generalized solver is instantiated with a theory T, such as the theory of equality or arithmetics, specializing the solver for this theory.
+Many modern SMT solvers use the DPLL(T) architecture, such as \textbf{Z3}  \cite{de_moura_z3_2008}, \textbf{SMTInterpol} \cite{hutchison_smtinterpol_2012} or \textbf{cvc5} \cite{barbosa_cvc5_2022}.
 
 
+A SMT solver can be used to solve first-order logic, which extends the language of boolean operation by more complex expressions such as functions, predicate symbols and constants. 
+For example a SMT Solver could be used for solving the trivial equation system
+\begin{lstlisting}[language=JavaScript]
+ x + 8y     = 17
+4y + 2z     = 14
+4x + 2y - z = 5
+\end{lstlisting}
+which gets translated into the SMT-LIB language \cite{barrett_smt-lib_2025}
+\begin{lstlisting}
+(declare-const x Real)
+(declare-const y Real)
+(declare-const z Real)
+(assert (= (+ (x) (* 8 y)) 17))
+(assert (= (+ (* 4 y) (* 2 z)) 14))
+(assert (= (- (+ (* 3 x) (* 2 y)) z) 5))
+(check-sat)
+(get-model)
+\end{lstlisting}
+This results is either \textit{unsat}, when there is no solution, or \textit{sat} and a list of inputs which satisfiy the model. The example is satisfiable: \lstinline[language=JavaScript]+sat [x = 1, y=2, z=3]+. 
 
-ExpoSE uses the Z3 SMT Solver \cite{de_moura_z3_2008} for solving the generated path conditions of the analysed program. Developed by Microsoft, it has constant progress and improvements to its capabilities.
 
-To use the SMT Solver, it offers an interface that connects a program in a higher-level language, like Python, Java, C++, or JavaScript, for which z3 offers a NPM (Node Package Manager) package since 2022. In expoSE, however, it is used in combination with the project Z3JavaScript, as, when expoSE got developed, there were no native JavaScript bindings available for Z3. 
+ExpoSE is built using the Z3 SMT Solver \cite{de_moura_z3_2008}. 
+To use the SMT Solver, it offers an interface that connects a program in a higher-level language, like Python, Java, C++, or JavaScript, for which Z3 offers a NPM (Node Package Manager) package since 2022. In ExpoSE, however, it is used in combination with the project Z3JavaScript, as, when ExpoSE got developed, there were no native JavaScript bindings available for Z3. 
 
-These bindings are required to connect these higher-level languages to the core system of z3, which is implemented in C.
+Z3Javascript is a wrapper for the API of Z3. It generated the JavaScript bindings to be used in ExpoSE, and builds the Z3 binary. It then exposes functions that are used to interact with Z3, converting JavaScript types into C-types. Additionally, it transforms JavaScript regular expressions in order for the Z3 parser to understand them, as Z3 does not support these from the get go. These bindings are required to connect these higher-level languages to the core system of Z3, which is implemented in C.
 
-ExpoSE uses it to solve the path conditions generated by the first run of the symbolic execution, to yield new inputs, which in turn add new path conditions to be solved by Z3. 
-
-
-Z3Javascript is a wrapper for the API of Z3, which generates the JavaScript bindings to be used in ExpoSE using ffi-napi, and builds the Z3 binary.
-
-It then exposes functions that are used to interact with Z3, converting JavaScript types into C-types. 
-Additionally, it transforms JavaScript regular expressions in order for the Z3 parser to understand them.
-
-
+ExpoSE uses Z3 to solve the path conditions generated by the first run of the symbolic execution, to yield new inputs, which in turn add new path conditions to be solved by Z3. 
+A path condition generated from the small function in \autoref{lst:example-program} would be \lstinline[language=JavaScript]+(> value 0.0))+ which in turn is tranlated into
+\begin{lstlisting}
+(declare-fun value () Real)
+(assert (not (<= value 0.0)))
+\end{lstlisting}
+to find an input that satisfies it. This is trivial for this example, but can prove difficult when the path conditions grow into the thousands or even millions.
 
 
-
-
-\section{expoSE}
+\section{ExpoSE}
 \label{sec:expose}
 ExpoSE builds on top of the previously presented projects and technologies. Utlizing these aforementioned tools, it is a DSE Framework for JavaScript, which allows almost any JavaScript code to be tested for bugs, by generating tests that cover the code base to a high degree and checking for reachability of statements. \cite{loring_expose_2017}
 
@@ -147,14 +155,14 @@ In the following, we will demonstrate how exactly the framework operates, based 
  
 Now, while short, there already is a lot to unpack here. Let's go over it line by line. 
 \begin{itemize}
-    \item Line 1: \lstinline{const S$ = require("S$")}: S\$ loads the interface library, that allows the user to interact with expoSE, declare a variable as symbolic and create assertions of conditions. More on that in the next lines.
-    \item Line 3: \lstinline{let x = S$.symbol("value")}: We create a symbolic variable “x” by using the S\$ function “symbol”, which allows us to define a name to track the variable with. We pass the system internal variable name “value” as a parameter.  
-    \item Line 4: \lstinline{let y = S$.symbol("multiplier", 2)}: We then create a symbolic variable “y”, internally called “multiplier”, this time, we also assign a starting seed (2), which at the same time defines the type of the variable.
-    \item Line 5 to 7: then apply these variables and try to do something with them. Here, we have a simple condition ($x > 0$), which, when fulfilled, triggers the assertion \lstinline{S$.assert(x*y > x)}, which throws the exception “assertion violation”, if  the assertion is violated.
+    \item Line 1: \lstinline[language=JavaScript]{const S$ = require("S$")}: S\$ loads the interface library, that allows the user to interact with ExpoSE, declare a variable as symbolic and create assertions of conditions. More on that in the next lines.
+    \item Line 3: \lstinline[language=JavaScript]{let x = S$.symbol("value")}: We create a symbolic variable “x” by using the S\$ function “symbol”, which allows us to define a name to track the variable with. We pass the system internal variable name “value” as a parameter.  
+    \item Line 4: \lstinline[language=JavaScript]{let y = S$.symbol("multiplier", 2)}: We then create a symbolic variable “y”, internally called “multiplier”, this time, we also assign a starting seed (2), which at the same time defines the type of the variable.
+    \item Line 5 to 7: We then apply these variables and try to do something with them. Here, we have a simple condition \lstinline[language=JavaScript]+x > 0+, which, when fulfilled, triggers the assertion \lstinline[language=JavaScript]{S$.assert(x*y > x)}, asserting that the condition is fulfilled. If the condition is violated, this assertion throws the exception "assertion violation". 
 \end{itemize}
-Afterwards, expoSE uses the functions exposed by the Jalangi2 backend  to access the instrumented code. For this, expoSE had to implement the callbacks of the provided backend functions. A template for these can be found in the Jalangi2 source code, with explanations for each of the functions, as part of an example analysis program\footnote{https://github.com/Samsung/jalangi2/blob/master/src/js/runtime/analysisCallbackTemplate.js}. 
-It starts by registering all local variables, functions and formal parameters, in our example case the variables and constants \lstinline{S$}, \lstinline{x} and \lstinline{y}. Subsequently, it resolves the statements, loads the \lstinline{S$} library and creates a concolic variable: if a concrete value is present, it uses this as starting seed. Otherwise, it will try all primitive types as the first input generation (i.e. string, array, number, object etc). The symbolic part of the concolic wrapper saves all encountered path conditions, which will be used to generate a new input which satisfies another path condition, thereby diverging from the original path, and maybe finding alternative paths.
-By having the assertion \lstinline{x*y > x} we force ExpoSE to create two more paths than it normally would. Without the assertion, there are the two paths \lstinline{x>0} and \lstinline{!x>0}. But with the assertion, we added the path condition \lstinline{(x*y) > x} and its negation. This can be used to test for a certain behaviour, but requires manual modification of the program. Similar to normal conditionals, it also leads to an increasing number of explorable paths.
+Afterwards, ExpoSE uses the functions exposed by the Jalangi2 backend  to access the instrumented code. For this, ExpoSE had to implement the callbacks of the provided backend functions. A template for these can be found in the Jalangi2 source code, with explanations for each of the functions, as part of an example analysis program\footnote{https://github.com/Samsung/jalangi2/blob/master/src/js/runtime/analysisCallbackTemplate.js}. 
+It starts by registering all local variables, functions and formal parameters, in our example case the variables and constants \lstinline[language=JavaScript]{S$}, \lstinline[language=JavaScript]{x} and \lstinline[language=JavaScript]{y}. Subsequently, it resolves the statements, loads the \lstinline[language=JavaScript]{S$} library and creates a concolic variable: if a concrete value is present, it uses this as starting seed. Otherwise, it will try all primitive types as the first input generation (i.e. string, array, number, object etc). The symbolic part of the concolic wrapper saves all encountered path conditions, which will be used to generate a new input which satisfies another path condition, thereby diverging from the original path, and maybe finding alternative paths.
+By having the assertion \lstinline[language=JavaScript]{x*y > x} we force ExpoSE to create two more paths than it normally would. Without the assertion, there are the two paths \lstinline[language=JavaScript]{x>0} and \lstinline[language=JavaScript]{!x>0}. But with the assertion, we added the path condition \lstinline[language=JavaScript]{(x*y) > x} and its negation. This can be used to test for a certain behaviour, but requires manual modification of the program. Similar to normal conditionals, it also leads to an increasing number of explorable paths.
 
 An example of generated path conditions of a marginally more complex system can be found in \autoref{lst:pc-appendix} containing just one path, showcasing, that these path conditions can grow to substantial size.
 

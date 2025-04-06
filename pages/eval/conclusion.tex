@@ -1,19 +1,24 @@
 This thesis reports on the feasibility of testing a web application using the dynamic symbolic execution framework ExpoSE, 
-and whether it can be used to find bugs and security vulnerabilities in the form of cross-site scripting, 
-contributing to the field of \textit{program} \textit{verification} and \textit{validation}.
+and whether it can be used to find bugs and security vulnerabilities in the form of cross-site scripting, contributing to the field of \textit{program} \textit{verification} and \textit{validation}.
 In \autoref{chapter:background} we introduced and explained the relevant theories and definitions of dynamic symbolic execution, testing and web applications.
 The \autoref{chapter:techstack} explained how ExpoSE operates and what technologies it uses.
 \autoref{chapter:implementation} gave an overview of ground-laying work done for this thesis, which was required preceding the actual implementation for this thesis.
-It also describes a small proof of concept that it was indeed possible to test a web application using ExpoSE. 
+It also describes a small proof of concept that it was indeed possible to test a web application using ExpoSE, with the important limitation that it cannot rely on HTTP but requires a single entity approach of client-server communication.
 This proof of concept sustained our idea and led us to the design and implementation of the Express model we presented in \autoref{chapter:express}, which allowed us to not only test the most basic applications,
-but also servers that were built using the framework Express.Js, as it was small enough to be feasible for the scope of this thesis, but widespread enough that 
-there were real servers that could be used, and therefore tested. In \autoref{chapter:application} we described what it takes to test a web application using ExpoSE and our Express model. The required modifications numbered few, but sadly removed the possibility of running it outside the testing context due to a change in imports and usage of these.
+but also servers that were built using the framework Express, as it was small enough to be feasible for the scope of this thesis, but widespread enough that 
+there were real servers that could be used, and therefore tested. We then described what it takes to test a web application using ExpoSE and our Express model. The required modifications numbered few, but sadly removed the possibility of running it outside the testing context due to a change in imports and usage of these.
 
 
-We then moved on to presenting how we evaluated our Express model, how we tested and which results those tests yielded. We tested two web applications, one of our creation and one we found on GitHub, which we only modified as required for testing purposes. We split our tests into two categories. The first category was to try and see whether it was indeed possible to reliably test a server. 
-The results for this testing category showed, that ExpoSE covered all routes and yielded the expected response. From testing the GitHub project, we found that our Express model correctly configured the server, applying all middle ware and routes as expected.
-We noted a heavy increase in memory usage when it encountered a route with a parameter. The coverage was more than satisfactory, with it approaching almost 90\%, with the remaining 10\% mostly being unreachable code, proving its ability to highlight these parts.
-As the results of the tests for the first category returned positive, we proceeded with testing the servers, this time with security issues in mind. This proved more difficult. While it was possible to argue, that input equals output meant that yes, XSS was possible. This was unsatisfactory. 
+We then moved on to presenting how we evaluated our Express model, how we tested and which results those tests yielded in \autoref{chapter:evaluation}. We tested two web applications, one of our creation and one we found on GitHub, which we only modified as required for testing purposes. We split our tests into two categories. The first category was to try and see whether it was indeed possible to reliably test a server. The second category was tailored toward finding XSS vulnerabilities.
+We then discussed our results in \autoref{chapter:discussion}, presenting our findings and encountered limitations. Our findings can be summarized as follows:
+
+Our findings, based on the results presented in \autoref{sec:results} and our research experiences, indicate that using ExpoSE offers valuable insights into the capabilities of web applications. 
+The tool was effective at generating inputs that covered defined routes and decision points, making it a viable option for locating hidden issues in complex application structures. It could even be said, ExpoSE can expose problems within a web application. It did have issues with timeouts from Z3, which may have affected reliability and our results. We don't know if a fixed Z3 would lead to more reliability.
+ExpoSE is a valuable tool for analysing and securing JavaScript-based web applications, particularly in identifying persistent XSS vulnerabilities through end-to-end testing of both client and server components. 
+However, its effectiveness is limited by specific requirements, such as the need for both components to be executed on the same system and Node.js version, as well as the challenge of modelling routing logic for frameworks like Express or Nest.js. 
+Furthermore, ExpoSE's reliance on the abandoned Jalangi2 framework restricts its ability to adapt to modern programming standards, impacting its overall usability and effectiveness in contemporary development environments.
+Lastly, in \autoref{chapter:related-work} we presented research in the field of web application testing,  dynamic symbolic execution and XSS security vulnerability detection.
+
 
 
 

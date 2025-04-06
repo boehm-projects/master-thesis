@@ -5,21 +5,47 @@ In this chapter, we present our findings in \autoref{sec:findings}, discuss disc
 Our findings are based on the presented results in \autoref{sec:results}, and the experiences we gained during the research for this thesis.
 
 \subsection{Reliability of End-to-End Testing}
-Using ExpoSE combined with Dynamic Symbolic Execution provided clear insights into the testing capabilities for web applications. As presented in \autoref{sec:results}, our efforts resulted in the successful testing of multiple web applications using our Express model.Through this approach, we were able to generate inputs that thoroughly covered all defined routes and effectively addressed decisions that rely on correct path parameters. By automatically generating diverse inputs, ExpoSE ensured exhaustive coverage of application functionality, helping us identify both expected and edge case behaviours.
-Thus, we can confidently assert that ExpoSE is a viable tool for testing web applications. Its capabilities in generating inputs that traverse different routes and decision points substantiate its effectiveness in revealing hidden issues that may arise in complex application flows. 
+Using ExpoSE combined with Dynamic Symbolic Execution provided clear insights into the testing capabilities for web applications. As presented in \autoref{sec:results}, our efforts resulted in the moderately successful testing of two web applications using our Express model. We were able to generate inputs that thoroughly covered almost all defined routes and effectively addressed decisions that rely on correct path parameters. By automatically generating diverse inputs, ExpoSE explored the application's functionality, helping us identify unique paths in the application. Unfortunately, we encountered one path that did not get explored, which might be an indication that the reliability is questionable at best. This, however, is because ExpoSE does require unique path conditions, which the route in question did not create.
+Thus, we think that ExpoSE can be utilized for testing web applications. Its capabilities in generating inputs that traverse different routes and decision points substantiate its effectiveness in revealing hidden issues that may arise in complex application structures. 
 
 
 \subsection{Identification of Security Vulnerabilities}
-The investigation into the identification of security vulnerabilities using ExpoSE revealed some concerning aspects regarding its reliability during testing. Specifically, while ExpoSE performed effectively as a standalone testing tool, we observed a decline in accuracy when executing tests in parallel. This led to a situation where the framework no longer generated inputs that sufficiently covered all paths, making it challenging to ensure comprehensive vulnerability detection.
+The framework provides valuable insights into allowed inputs by generating test cases that include potential attack patterns within strings. If the malicious string was already stored in the database, ExpoSE was unable to pinpoint the malicious content.
 
-Due to this limitation, we opted to test for XSS executing one test at a time. Despite the parallel testing challenges, our findings indicate that ExpoSE is still capable of identifying vulnerabilities. The framework provides valuable insights into allowed inputs by generating test cases that include potential attack patterns within strings.
-
-Therefore, the second research question, whether ExpoSE can be utilized for discovering security issues, cannot be answered with certainty. While ExpoSE appears promising in generating inputs that could lead to the discovery of vulnerabilities, the complexities involved suggest that its reliability in performing such tasks needs further investigation. 
+Therefore, the second research question, whether ExpoSE can be utilized for discovering security issues, cannot be answered with certainty, as the use cases are severely limited. While ExpoSE appears promising in generating inputs that could lead to the discovery of vulnerabilities, the complexities involved suggest that its reliability in performing such tasks needs further investigation, especially as we experienced a severe increase in path conditions once we introduced string sanitization.
 
 
 \section{Limitations}
-\label{sec:limitations}
-End-to-end testing can help unravel issues with persistent XSS, as storing and responding with strings that may contain attack scripts is enabled via lacking input validation, which is easily testable using ExpoSE. On the other hand, since the tests are end-to-end, the client dictates the outcome. If it does not do anything with the response, ExpoSE will not go out of its way to generate different inputs for the same route. It only executes each path precisely once and continues with the next branch, therefore locating a security issue can be bound to the absence of an input, requiring an understanding of the expected behaviour.
+\label{sec:limitations} 
+ExpoSE provides valuable insights into the reachability, vulnerability, and stability of web applications, offering developers a robust tool for analysing and securing their codebases. Its ability to scrutinize JavaScript applications allows it to identify potential weaknesses and improve overall reliability.
+However, ExpoSE's capabilities are influenced by certain limitations. 
+
+\begin{enumerate}
+    \item End-to-end testing with ExpoSE can effectively identify issues related to persistent XSS vulnerabilities. Such vulnerabilities arise when input validation is insufficient, allowing for the storage and subsequent retrieval of strings that may contain malicious scripts. ExpoSE, by executing both client and server components, is equipped to test these scenarios comprehensively. However, due to the nature of end-to-end tests, the client behaviour heavily influences the outcome of the testing process. If the client does not process or act upon the server's response in a way that exposes vulnerabilities, ExpoSE will not attempt to generate alternative inputs for the same route. Instead, it executes each path just once before moving on to the next branch. This approach underscores the importance of an in-depth understanding of the expected behaviour of the application. Locating security issues may therefore depend on recognizing the absence of expected input handling or validation, emphasizing the need for extensive analysis of how the application should ideally behave against potential threats.
+    
+    \item ExpoSE operates exclusively within JavaScript-based environments, necessitating that both client and server components are implemented in JavaScript. Furthermore, it is imperative that these components are executable on the same physical system and utilize the identical (or at least a compatible) version of Node.js. This requirement stems from our methodology, which involves testing web applications by treating the client and server as a unified entity during execution. Consequently, ExpoSE's applicability is confined to environments that strictly conform to these conditions, limiting its use in scenarios where diverse technologies or distributed architectures are present.
+    
+    \item Web applications are typically developed using frameworks such as Express or Nest, which extend beyond plain JavaScript to provide enhanced features and structure. Unfortunately, ExpoSE is not equipped to test these frameworks directly out of the box. To leverage ExpoSE in such environments, users are required to develop a model that accurately represents the routing logic of the framework in use, akin to the custom Express model provided by ExpoSE.
+    This requirement imposes a significant overhead on the testing process, as additional time and effort must be invested in modelling the framework's routing architecture before meaningful analysis can be performed. This modelling process can be complex and demands a thorough understanding of how the framework handles requests, routes, and middleware, adding a layer of complexity to the utility of ExpoSE in modern web development contexts. Consequently, while ExpoSE offers beneficial insights into web application security and stability, the necessity for bespoke adaptations limits its accessibility and ease of use in typical framework-based projects.
+
+\end{enumerate}
+
+Finally, we want to highlight that the most significant limiting factor for ExpoSE is the fact that it is built upon Jalangi2, a framework that has been abandoned by its developers and is no longer actively supported or improved. As a result, ExpoSE faces challenges when applied to modern programs, as it is unable to leverage updates, optimizations, or fixes that are typically necessary to maintain compatibility with contemporary JavaScript application standards. This dependency on an unsupported base framework severely affects the overall capabilities and applicability of ExpoSE, restricting its usage in current development environments and limiting its effectiveness in addressing emerging security threats or evolving code paradigms.
+
+
+
 
 \section{Future Work}
 \label{sec:ft-research}
+
+We tried to test as a web application using ExpoSE and achieved satisfactory results; however, it is far from decisive whether these tests can be used as the only way of testing a JavaScript web application, as dynamic symbolic execution is unsuitable to generate edge cases. Hence, we think, future improvements to ExpoSE could be the addition of the generation of inputs at the upper and lower bounds for paths that finish program termination.
+
+Another point of interest is that while we implemented a model for the routing and request handling for the express framework, it is still just one of the most basic frameworks. As a result, it was close enough to plain JavaScript, and comparably easy to model. As we now showed that it is possible to test a web application that uses a framework, it would be interesting how it handles a modelled backend framework such as Nest\footnote{https://nestjs.com/} or even full-stack frameworks like Astro\footnote{https://astro.build/}, as we barely scratched the surface with our client, which we kept in plain JavaScript.
+
+Last but not least, we suggest looking further into improving the Z3 JavaScript bindings, as while we were able to get Z3 to build and run without exceptions in a tradeoff with the timeouts encountered in \autoref{sec:results}, our lack of C++ knowledge and of Z3 ultimately prevented us from fixing the underlaying problem of missing functionalities in the JavaScript wrapper, which lead to the encountered timeouts. Fixing these might remedy them.
+
+
+
+
+
+
