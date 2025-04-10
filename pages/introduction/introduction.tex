@@ -1,31 +1,24 @@
 \pagenumbering{arabic}
 \setcounter{page}{1}
-\section{Motivation}
-\label{sec:motivation}
 
-Whenever we write code, testing is an essential process that cannot be overlooked. Ideally, testing occurs concurrently with development; failing to do so can lead to unpleasant surprises later on. Bill Gates once remarked, 
+Testing is an essential part of software development that should not be overlooked. Ideally, it occurs concurrently with development, as neglecting it can lead to unexpected issues later. Bill Gates once remarked, 
 \begin{quote}
 
     “… we have as many testers as we have developers. And testers spend all their time testing, and developers spend half their time testing. We're more of a testing, a quality software organization than we're a software organization.” — Bill Gates in an interview for InformationWeek \cite{bill_q_2002} 
 \end{quote}
 
-This statement underscores the critical role of testing in software development—an endeavour that can be even more important than writing the code itself.
+This statement underscores the critical role of testing in software development—an endeavour that can be even more crucial than writing the code itself. 
 
+Modern applications often involve complex interactions between multiple systems. For example, web applications that utilize external resources must handle intricate authentication and authorization processes, as well as the management of complex data structures. This complexity makes it not only impossible to catch all bugs, but also nearly impossible to detect most bugs, which is a costly problem. The Cost of Poor Software Quality in the US report~\cite{herb_krasner_cost_2022} estimated that software bugs account for approximately \$2.4 trillion annually in losses in the United States alone. 
+With the emergence of modern frameworks, it becomes challenging to discern whether a bug originates from custom code or from the framework itself.
 
-The severity of bugs and vulnerabilities varies significantly based on the application's nature and context. For instance, an offline program has different security considerations than an Internet of Things (IoT) application, such as a smart thermostat, or a web application handling sensitive data globally. Each of these programs can harbour security issues, necessitating extensive testing to identify potential flaws. As software becomes increasingly complex, catching all bugs becomes increasingly challenging. 
+Among these frameworks, Express deserves special attention. As a minimal and flexible Node.js web application framework, Express provides a robust set of features tailored for both web and mobile applications. It acts as a foundational layer for many Node.js applications, offering crucial elements such as routing, middleware, and HTTP utility methods that streamline the development of web APIs.
 
+Given the intricate nature of modern application development, automating the time-consuming testing process has become an increasingly sought-after goal.
+According to the 2024 State of Testing Report~\cite{joel_montvelliksy_state_2024}, 91\% of software organizations use test automation to enhance efficiency and reduce errors, yet only 40\% utilize automated tests for input generation.
+One promising approach in this area is Dynamic Symbolic Execution (DSE), which has gained traction for automating test coverage and uncovering software bugs and vulnerabilities. Though DSE dates back to the early 1970s, with foundational work by \citet{boyer_selectformal_1975} and  \citet{king_new_1975}, it has experienced a resurgence in recent years. Numerous frameworks have been developed based on DSE, each offering distinct advantages and limitations. Among these, ExpoSE \citet{loring_expose_2017} stands out for its strengths in string manipulation and reasoning—critical features when testing web applications where data predominantly comes in text-based formats.
 
-Consequently, automating this time-consuming testing process is a highly sought-after goal, leading to numerous approaches aimed at achieving it.
-Dynamic Symbolic Execution (DSE) is one approach that has gained traction for automating test coverage and uncovering software bugs and vulnerabilities. While DSE can be traced back to the early 1970s, with foundational work by \citet{boyer_selectformal_1975} and \citet{king_new_1975}, it has recently experienced a resurgence. Numerous frameworks for DSE have been developed, each with its advantages and limitations. Among them, ExpoSE, as described in \citet{loring_expose_2017}, stands out for its strength in string manipulation and reasoning critical features when testing web applications, where data is predominantly transmitted in text-based formats and requires string operations such as checking whether a string matches a certain pattern or splitting it into multiple parts.
-
-
-
-\newpage
-
-\section{Research questions}
-\label{sec:research-questions}
-
-This thesis aims to apply DSE using the ExpoSE framework to test web applications and to answer the following research questions:
+As frameworks such as Express continue to rise, it is essential to automate sophisticated testing processes to ensure high software quality and security within the increasingly complex domain of software development. This thesis aims to apply DSE using the ExpoSE framework to test web applications and to answer the following research questions:
 
 \begin{itemize}
     \item RQ1: Is it possible to reliably end-to-end fuzz test a web application using Dynamic Symbolic Execution in ExpoSE?
@@ -35,10 +28,8 @@ This thesis aims to apply DSE using the ExpoSE framework to test web application
 We tested two web applications and our results indicated that it is indeed possible to end-to-end fuzz test a web application with DSE in ExpoSE, which allowed us to proceed to answer RQ2.
 In this thesis, we paid special attention to vulnerabilities known as Cross-Site Scripting (XSS), which is a prevalent issue in web applications. XSS attacks can allow malicious actors to execute scripts in the context of a user's browser, potentially leading to unauthorized actions, data theft, and other security concerns. Given ExpoSE's robust support for string operations, we believed it is well-suited to identify such string-based attacks, which turned out to be true, answering RQ2 successfully.
 
-\section{Structure}
-\label{sec:thesis-structure}
-This thesis is structured as follows. First, we will explain the terminology and the theories this thesis builds on. 
-Following this, we proceed to provide a description of ExpoSE and its technologies, along with an overview of its usage.
+
+The structure of this thesis is as follows: we begin by introducing the key terminology and theoretical foundations, followed by a description of ExpoSE and its technologies, along with an overview of its usage.
 Next, we present the necessary changes for ExpoSE to function and outline our approach to the problem addressed in this thesis. This chapter also offers a minimal answer to RQ1.
 Expanding on this foundation, we will delve into the application of a JavaScript framework, detailing the model created for it and explaining its necessity. 
 An evaluation of our approach follows,  where we test the model within a web application and provide an answer to our research question, reflecting on whether we have met our goals.

@@ -53,6 +53,8 @@
 
 \usepackage{amsthm}
 
+\captionsetup{justification=justified}
+
 \newfloat{lstfloat}{htbp}{lop}
 \floatname{lstfloat}{Listing}
 \def\lstfloatautorefname{Listing}
@@ -141,9 +143,6 @@
 \newpage
 \tableofcontents
 \microtypesetup{protrusion=false}
-\listoffigures{}
-\listoftables{}
-\lstlistoflistings
 \microtypesetup{protrusion=true}
 \pagestyle{fancy}
 \fancyhf{}
@@ -205,10 +204,10 @@
 \bibliography{bibliography}
 
 % ---------------------------------------------- %
-\chapter*{Appendix}
-\label{chapter:appendix}
+%\chapter*{Appendix}
+%\label{chapter:appendix}
 
-\input{pages/end/appendix}
+%\input{pages/end/appendix}
 
 % ---------------------------------------------- %
 

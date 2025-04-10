@@ -9,15 +9,22 @@ but also servers that were built using the framework Express, as it was small en
 there were real servers that could be used, and therefore tested. We then described what it takes to test a web application using ExpoSE and our Express model. The required modifications numbered few, but sadly removed the possibility of running it outside the testing context due to a change in imports and usage of these.
 
 
-We then moved on to presenting how we evaluated our Express model, how we tested and which results those tests yielded in \autoref{chapter:evaluation}. We tested two web applications, one of our creation and one we found on GitHub, which we only modified as required for testing purposes. We split our tests into two categories. The first category was to try and see whether it was indeed possible to reliably test a server. The second category was tailored toward finding XSS vulnerabilities.
+We then moved on to presenting how we evaluated our Express model, how we tested and which results those tests yielded in \autoref{chapter:evaluation}. We tested two web applications, one of our creation and one we obtained from GitHub, which we only modified as required for testing purposes. We split our tests into two categories. The first category was to try and see whether it was indeed possible to reliably test a server. The second category was tailored toward finding XSS vulnerabilities.
 We then discussed our results in \autoref{chapter:discussion}, presenting our findings and encountered limitations. Our findings can be summarized as follows:
 
 Our findings, based on the results presented in \autoref{sec:results} and our research experiences, indicate that using ExpoSE offers valuable insights into the capabilities of web applications. 
-The tool was effective at generating inputs that covered defined routes and decision points, making it a viable option for locating hidden issues in complex application structures. It could even be said, ExpoSE can expose problems within a web application. It did have issues with timeouts from Z3, which may have affected reliability and our results. We don't know if a fixed Z3 would lead to more reliability.
+The tool was effective at generating inputs that covered defined routes and decision points, making it a viable option for locating hidden issues in complex application structures. It could even be said, ExpoSE can expose problems within a web application. It did have issues with timeouts from Z3, which may have affected reliability and our results.
 ExpoSE is a valuable tool for analysing and securing JavaScript-based web applications, particularly in identifying persistent XSS vulnerabilities through end-to-end testing of both client and server components. 
 However, its effectiveness is limited by specific requirements, such as the need for both components to be executed on the same system and Node.js version, as well as the challenge of modelling routing logic for frameworks like Express or Nest.js. 
 Furthermore, ExpoSE's reliance on the abandoned Jalangi2 framework restricts its ability to adapt to modern programming standards, impacting its overall usability and effectiveness in contemporary development environments.
 Lastly, in \autoref{chapter:related-work} we presented research in the field of web application testing,  dynamic symbolic execution and XSS security vulnerability detection.
+
+From our perspective, the most important part for going forward is to either improve Jalangi2 so it supports modern JavaScript or to search for an alternative. We, however, cannot with good conscience give any recommendation, as the most notable alternative, \textbf{NodeProf} \cite{sun_efficient_2018}, also seems to be abandoned with the last update being two years ago. This is why we believe that improving upon Jalangi2 seems to be the most efficient and effective way.
+Fixing Z3 for JavaScript should also be done, as this is inhibiting ExpoSE even though the functionality is present and only needs adaption.
+
+After these two parts are done, we think that ExpoSE offers a framework that can and will be used for testing contemporary and future software.
+
+
 
 
 

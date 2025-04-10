@@ -1,9 +1,10 @@
 \chapter*{Abstract}
 
-As web applications become more complex and prevalent, it has become more important to ensure their security and reliability. This thesis investigates the application of Dynamic Symbolic Execution (DSE) through the ExpoSE framework to automate the testing of web applications. 
-We specifically aim to evaluate whether ExpoSE can effectively identify bugs and security vulnerabilities, particularly Cross-Site Scripting (XSS) attacks.
+As web applications grow in complexity and prevalence, ensuring their security and reliability has become increasingly important.
+This thesis explores the use of Dynamic Symbolic Execution (DSE) through the ExpoSE framework to automate web application testing.
+Specifically, we aim to evaluate whether ExpoSE can effectively identify bugs and security vulnerabilities, with a particular focus on Cross-Site Scripting (XSS) attacks.
 
-Our approach to testing web applications by merging the client and the server into one entity enables DSE to generate paths not only based on the client's state, but also based on the internals of the server.
-The research encompasses the design and implementation of an Express.js model to facilitate thorough testing of more sophisticated web applications. 
-Through systematic evaluations, we demonstrate ExpoSE's capability to generate inputs that cover application routes and decision paths, effectively revealing both functional issues and security weaknesses. 
+Our approach involves merging the client and server into a single entity, enabling DSE to generate paths based not only on the client’s state but also on server internals.
+The research includes the design and implementation of an Express.js model to facilitate the testing of complex web applications.
+Through systematic evaluations, we demonstrate ExpoSE’s ability to generate inputs that cover application routes and decision paths, thereby revealing both functional issues and security weaknesses.
 Our findings show that ExpoSE was able to generate unique test cases and find potential vulnerabilities related to input handling and validation.

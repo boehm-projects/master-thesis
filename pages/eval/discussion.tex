@@ -6,7 +6,7 @@ Our findings are based on the presented results in \autoref{sec:results}, and th
 
 \subsection{Reliability of End-to-End Testing}
 Using ExpoSE combined with Dynamic Symbolic Execution provided clear insights into the testing capabilities for web applications. As presented in \autoref{sec:results}, our efforts resulted in the moderately successful testing of two web applications using our Express model. We were able to generate inputs that thoroughly covered almost all defined routes and effectively addressed decisions that rely on correct path parameters. By automatically generating diverse inputs, ExpoSE explored the application's functionality, helping us identify unique paths in the application. Unfortunately, we encountered one path that did not get explored, which might be an indication that the reliability is questionable at best. This, however, is because ExpoSE does require unique path conditions, which the route in question did not create.
-Thus, we think that ExpoSE can be utilized for testing web applications. Its capabilities in generating inputs that traverse different routes and decision points substantiate its effectiveness in revealing hidden issues that may arise in complex application structures. 
+Thus, we think that ExpoSE can be utilized for testing web applications when developed with ExpoSE in mind. Its capabilities in generating inputs that traverse different routes and decision points substantiate its effectiveness in revealing hidden issues that may arise in complex application structures. 
 
 
 \subsection{Identification of Security Vulnerabilities}
@@ -33,16 +33,16 @@ However, ExpoSE's capabilities are influenced by certain limitations.
 Finally, we want to highlight that the most significant limiting factor for ExpoSE is the fact that it is built upon Jalangi2, a framework that has been abandoned by its developers and is no longer actively supported or improved. As a result, ExpoSE faces challenges when applied to modern programs, as it is unable to leverage updates, optimizations, or fixes that are typically necessary to maintain compatibility with contemporary JavaScript application standards. This dependency on an unsupported base framework severely affects the overall capabilities and applicability of ExpoSE, restricting its usage in current development environments and limiting its effectiveness in addressing emerging security threats or evolving code paradigms.
 
 
-
-
 \section{Future Work}
-\label{sec:ft-research}
+\label{sec:future-work}
 
 We tried to test as a web application using ExpoSE and achieved satisfactory results; however, it is far from decisive whether these tests can be used as the only way of testing a JavaScript web application, as dynamic symbolic execution is unsuitable to generate edge cases. Hence, we think, future improvements to ExpoSE could be the addition of the generation of inputs at the upper and lower bounds for paths that finish program termination.
 
 Another point of interest is that while we implemented a model for the routing and request handling for the express framework, it is still just one of the most basic frameworks. As a result, it was close enough to plain JavaScript, and comparably easy to model. As we now showed that it is possible to test a web application that uses a framework, it would be interesting how it handles a modelled backend framework such as Nest\footnote{https://nestjs.com/} or even full-stack frameworks like Astro\footnote{https://astro.build/}, as we barely scratched the surface with our client, which we kept in plain JavaScript.
 
-Last but not least, we suggest looking further into improving the Z3 JavaScript bindings, as while we were able to get Z3 to build and run without exceptions in a tradeoff with the timeouts encountered in \autoref{sec:results}, our lack of C++ knowledge and of Z3 ultimately prevented us from fixing the underlaying problem of missing functionalities in the JavaScript wrapper, which lead to the encountered timeouts. Fixing these might remedy them.
+
+
+Last but not least, we suggest looking further into improving the Z3 JavaScript bindings, as while we were able to get Z3 to build and run without exceptions in a tradeoff with the timeouts encountered in \autoref{sec:results}, our limited understanding of C++  and of Z3 ultimately prevented us from fixing the underlaying problem of missing functionalities in the JavaScript wrapper, which lead to the encountered timeouts. Fixing these missing functionalities might remedy the timeouts and therefore allow ExpoSE to generate more inputs, leading to higher coverage.
 
 
 

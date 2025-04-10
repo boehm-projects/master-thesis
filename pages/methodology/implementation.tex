@@ -26,15 +26,16 @@ This section provides a short overview of the changes made to two of the four ma
 
 \subsection{Changes to Z3}
 \label{sec:changes-z3}
-As the forked repository of Z3 made for ExpoSE was almost 5 years old, and we noticed a null pointer exception in the C++ code, we decided to merge the changes from the original repository into the fork. There were almost 5000 commits since the last merge, and we hoped that the null pointer exception has been fixed meanwhile. 
+As the forked repository of Z3 made for ExpoSE was almost 5 years old, and we noticed a null pointer exception in the C code, we decided to merge the changes from the original repository into the fork. We assumed that the null pointer exception had been fixed at this point because there were almost 5000 commits since the last merge. 
 The forwarding went smoothly, with two exceptions. Z3 now includes the type “Char Pointer”, which had to be added to the JavaScript portion of the binding creation.
 
-The second exception was, that the Z3 API now provided a few more callbacks, which required parameters that were not implemented for JavaScript. 
+The second exception was, that the Z3 API now provides more callbacks, which required parameters that were not implemented for JavaScript. 
+
 We deleted these callbacks, as these would stop the generation of the bindings and of the dynamically linked library (DLL) of Z3.
 
 \subsection{Changes to Z3JavaScript}
 \label{sec:changes-z3js}
-With the update to Z3 itself, we also had to update the Z3JavaScript project, as this defined the types for the JavaScript bindings. It turned out to be a simple issue of adding two new object types (a ParserContextObj and a SimplifierObj) of the type voidp, which is a pointer to the type void.
+With the update to Z3 itself, we also had to update the Z3JavaScript project, as this defined the types for the JavaScript bindings. It turned out to be a simple issue of adding two new object types (a {\tt{ParserContextObj}} and a {\tt{SimplifierObj}}) of the type {\tt{voidp}}, which is a pointer to the type void.
 
 
 \section{System-imposed limitations}
@@ -51,12 +52,12 @@ This is a significant limitation, as it implies that we are unable to utilize an
 
 \subsection{Symbolic Addresses and Objects}
 \label{sec:sym-obj}
-While the other limits are specific to our use case, this issue is universal. Pointers can pose challenges for most symbolic execution engines, as highlighted in various studies, including those by \citet{cha_unleashing_2012}, \citet{coppa_rethinking_2017} and \citet{elkarablieh_precise_2009}.
+While the other limits are specific to our use case, this issue is universal. Pointers can pose challenges for most symbolic execution engines, as highlighted in various studies, including those by~\citet{cha_unleashing_2012,coppa_rethinking_2017,elkarablieh_precise_2009}.
 Reasoning about the address of a variable poses an issue, as in theory, DSE would have to assume all possible addresses. 
 \citet{elkarablieh_precise_2009} propose an approach that limits every pointer to a concrete memory region in which it remains symbolically, reducing the amount of possible memory addresses, which in theory is simple, but as itself proclaims “nontrivial to implement”. 
 \citet{coppa_rethinking_2017} introduce the concept of \textbf{MemSight}, which allows the mapping of symbolic expressions to data, instead of instantiated addresses, reducing the need to concretize the symbolic memory addresses. 
 
-\citet{cha_unleashing_2012} proposed a symbolic address, which concretizes writes and only the read is a symbolic operation. 
+\citet{cha_unleashing_2012} proposed a symbolic address, which concretizes writes and only the read operations are a symbolic operation. 
 A similar approach was also taken for ExpoSE, as it concretizes the namespace a variable can occupy, and only its value is resolved symbolically.
 ExpoSE initializes a symbolic object by reserving a namespace, concretizing it.
 
@@ -64,16 +65,21 @@ ExpoSE initializes a symbolic object by reserving a namespace, concretizing it.
 On execution, it then tracks every property access, updating the initial object with a new symbolic variable for the accessed property. 
 If we consider this expression:\\
 \lstinline[language=JavaScript]{const object = S$.symbol("object");}
-This instruction initilizes the variable object as a new symbolic variable, without any indication that it is an object. 
+This instruction initilises the variable object as a new symbolic variable, without any indication that it is an object. 
 Should ExpoSE now encounter a property access, i.e.
 \lstinline[language=JavaScript]{if(object.field === "value")},
 the property \lstinline[language=JavaScript]{object.field} gets initilized as a new symbolic variable
 \lstinline[language=JavaScript]{object.field = S$.symbol("field");} 
 and a path condition gets added, that \lstinline[language=JavaScript]{object} is, in fact, an object.\cite{loring_systematic_2021}
 
-While this works in theory, it is incredibly costly, leading to an explosion of paths, due to the dynamically typed nature of JavaScript, thus adding one path condition per type just on encountering a property access. In black-box testing, where the program has no other option for reasoning about the kind of inputs the program takes, using completely symbolic objects does increase coverage and helps to find bugs.
+Although this approach works theoretically, it can cause path explosion due to JavaScript’s dynamically typed nature.
+Dynamic typing in JavaScript means that variables do not have a fixed data type, and their types can change throughout program execution. This flexibility presents challenges in dynamic symbolic execution.
+For instance, if a program accesses a property \lstinline[language=JavaScript]{object.foo}, the symbolic execution engine has to consider that 
+\lstinline[language=JavaScript]{foo} could be a string, a number, or even an object, among others. Each of these possibilities constitutes a different path condition that the engine must track and explore. This multiplicity of paths is caused because each unique combination of types encountered at each operation increases the number of paths that must be examined. Thus, even a simple property access can lead to an explosion of paths if not handled properly, as the engine now explores additional paths for each type that the involved entity can take.
+
+In testing engines, where the program has no other option for reasoning about the kind of inputs the program takes, using completely symbolic objects does increase coverage and helps to find bugs.
 In our case, however, where we have full access to the code and where we have knowledge of all input fields, this can be avoided by creating an object with possible properties already symbolically initialized. This can be done because all unused fields are simply ignored and not adding new path conditions. 
-This means, instead of waiting for ExpoSE to find \lstinline{object.field}, we start with an object already containing the field, together with a seed indicating the type, as can be seen in 
+This means, instead of waiting for ExpoSE to find \lstinline{object.field}, we start with an object already containing the field, together with a seed indicating the type  
 \begin{lstlisting}[language=JavaScript]
 const object = {
    "field": S$.symbol("field", "string"),
@@ -81,36 +87,35 @@ const object = {
 };
 \end{lstlisting}
 
+which alleviates the need of the engine to try all types possible.
+
 
 
 
 \subsection{External Packages}
 \label{sec:externalpack}
-Our last hard limit was the DSE engine assuming any imported package being part of the system under test. Although it was technically correct, this caused imported packages to be instrumented and execution branches being created, leading to a massive explosion in branches. While it could be used to find bugs and errors in these external packages as well, it did not offer any benefit for locating issues in the part of the web application we wanted to test. 
-Hence, we opted out of using any external package for now.
+Our last hard limit is that ExpoSE assumes that any imported package is part of the system under test. This causes imported packages to be instrumented and execution branches to be created, which leads to a massive increase in the number of branches that have to be evaluated. While it can be used to find bugs and errors in these external packages, it does not offer any benefit for locating issues in the part of the web application we wanted to test. 
+Hence, we opt out of using any external package for now.
 
-\subsection{Dependency Issues}
-\label{sec:dep-issues}
-While this was not a limitation per se, it proved to be an issue with executing the tool chain of ExpoSE in the first place. When the codebase was created in 2017, almost all personal computers were x86-based. While ARM was already widespread in mobile devices, few personal computers were running on an ARM instruction set\footnote{We assume this to be the case, as even the \href{https://www.arm.com/-/media/global/company/investors/Arm\%20Strategic\%20Review\%20-\%202017.pdf?revision=8473a535-6f7e-4ce5-85fe-0eb6f1f75487&la=en}{investor report} in 2017 does not mention them}. Therefore, little to no effort was spent on supporting it. 
-With the release of the M1 processor by Apple, this was no longer the case.
-This meant that the ARM instruction set went from being rarely supported to wide-spread use.
-When we started working on this thesis, we noticed the lack of support. The project required Node version 14, and the package ffi-napi\footnote{https://www.npmjs.com/package/ffi-napi}, that provided the ability to create C bindings, which were used in Z3, required Node 16 or higher.
-Upgrading the node version would in turn create an error in ffi-napi for the ARM-based M processors\footnote{As reported in issue https://github.com/node-ffi-napi/node-ffi-napi/issues/248}.\\
-While working on this project, the issue got resolved by an update to ffi-napi.
+
 
 \section{HTTP in Symbolic Execution}
 \label{sec:http}
 When working with web applications, there are multiple components that have to be taken care of. The internal processing, the storing and retrieving of data, and most importantly, the communication between server and client.
-This communication required leads to a dilemma in symbolic execution, as for it to function properly, it needs to hold the symbolic state across the many processing layers between client and server. 
+This communication required leads to a challenge in symbolic execution, as for it to function properly, it needs to hold the symbolic state across the many processing layers between client and server. 
 
-The requests and responses are handled at the operating system level, converted into binaries, leaving the context to a symbolic execution engine can handle. Most already face the issue of being based on a singular programming language. If, for example, we create a JavaScript request, we can have a symbolic state only as it exists in this context. Once it leaves the context of a JavaScript application, we would require an engine that supports multiple languages and can also operate on a system level. On the receiving end, the engine has to reverse this process, and continue with the incoming symbolic request.
-
-
-There have been efforts to support this cross-language and cross-platform dynamic symbolic execution. \citet{bucur_prototyping_2014-1} introduced \textbf{Chef}, which is a tool to use the interpreter as an engine specification, creating a symbolic interpreter, in contrast to an engine that gets executed instead. Built on top of \textbf{S\textsuperscript{2}E}\cite{chipounov_s2e_2011}, which symbolically executes a virtual machine with all of its parts such as the OS kernel, and programs, CHEF has the potential to track the state of an input across multiple systems.
+The requests and responses are handled at the operating system level, converted into binaries, leaving the context to a symbolic execution engine can handle. Most symbolic execution frameworks are already limited by being language-specific. If, for example, we create a JavaScript request, we can have a symbolic state only as it exists in this context. Once it leaves the context of a JavaScript application, we would require an engine that supports multiple languages and can also operate on a system level. On the receiving end, the engine has to reverse this process, and continue with the incoming symbolic request.
 
 
-However, as these approaches are highly resource intensive, using a cross-platform approach seemed impractical for the purpose of our goal. This led us to the solution we will be using for our tests; we bypass the communication between client and server completely, by injecting the server into the client, or vice versa, depending on the server structure (more on that in \autoref{chapter:express}). With that, we would have the full symbolic state of the execution, the data would not need to be transformed, and could simply be handed over to the request and response processing on server- and client-side. 
-We deemed this the correct approach because it achieves the goal of a symbolic communication we would get with a cross-platform approach, but less costly.
+There have been efforts to support this cross-language and cross-platform dynamic symbolic execution. \citet{bucur_prototyping_2014-1} introduced \textbf{Chef}, a symbolic execution framework specifically designed to address the challenges of analysing programs written in interpreted languages, such as Python or Lua. Rather than implementing symbolic semantics for each language independently, Chef takes a novel approach by transforming the interpreter itself into a symbolic executor. 
+This is achieved by embedding symbolic values natively into the interpreter’s execution model, treating them equivalently to concrete values throughout program evaluation. This strategy eliminates the need to reimplement complex language semantics and runtime behaviour, which are typically tightly coupled with the interpreter's implementation.
+Built on top of \textbf{S\textsuperscript{2}E}\cite{chipounov_s2e_2011}, a system-level symbolic execution platform that extends \textbf{QEMU} \cite{bellard_qemu_2005} and enables symbolic analysis of full virtual machines, including the operating system kernel, user-space programs, and network stacks. By leveraging S\textsuperscript{2}E, Chef can symbolically execute the interpreter as a binary within the VM, while maintaining control over symbolic memory, path conditions, and state management. This combination gives Chef the ability to analyse programs in their native environments with minimal modification, while still offering control over symbolic variables and execution paths.
+This layered design is especially powerful in the context of web applications, since the interpreter can symbolically execute code that processes HTTP requests, interacts with databases, and performs complex control-flow logic, all while running within a fully symbolic operating system environment. This means Chef can, in theory, track symbolic inputs from low-level sources like socket buffers all the way through the application logic to the final response, allowing it to capture the entire symbolic communication channel between a client and server, provided the system stays within the supported language and execution model.
+
+However, this potential comes at a cost. The combined use of Chef and S\textsuperscript{2}E introduces substantial performance and scalability challenges, especially in cross-platform or multi-language scenarios. Each component adds symbolic overhead, and the integration of multiple symbolic layers (interpreter, system, communication) can lead to an explosion of paths and long execution times. 
+
+This leads us to the solution we use for our tests: we bypass the communication between client and server completely, by injecting the server into the client, or vice versa, depending on the server structure (more on that in \autoref{chapter:express}). With that, we have the full symbolic state of the execution, the data does not need to be transformed, and can simply be handed over to the request and response processing on server- and client-side. 
+This approach effectively achieves the goal of symbolic communication, similar to what would be obtained with a cross-platform method, while reducing the associated computational overhead.
 
 
 \section{Initial Testing of a Plain JavaScript Application}
@@ -120,16 +125,16 @@ After addressing all the fundamental issues, we began by creating a small server
 \subsection{Idea}
 \label{sec:idea}
 
-The objective was to construct a plain JavaScript server by utilizing the http package's method “createServer” and subsequently eliminating all components that depend on http, thus skipping the actual server-client connection.
-We had two goals for this: 
+The objective is to construct a plain JavaScript server by utilizing the http package's method “createServer” and subsequently eliminating all components that depend on http, thus skipping the actual server-client connection.
+We have two goals for this: 
 \begin{enumerate}
-    \item  We created a server that had both static and variable routes, notably one route that consisted only of a regular expression, to test whether all routes could be found by the symbolic variable for the path alone.
-    \item  We also implemented a short test for injecting code into the response, by asserting that the client cannot send any script tag \lstinline[language=JavaScript]{<script><\script>} in the request data, while asserting that it has to be a valid email. Which in turn meant ExpoSE has to try to violate the assertion by creating inputs that contain a script tag and are no valid emails. 
+    \item  We create a server that has both static and variable routes, notably one route that consisted only of a regular expression, to test whether all routes could be found by the symbolic variable for the path alone.
+    \item  We also implement a short test for injecting code into the response, by asserting that the client cannot send any script tag \lstinline[language=JavaScript]{<script><\script>} in the request data, while asserting that it has to be a valid email. Which in turn meant ExpoSE has to try to violate the assertion by creating inputs that contain a script tag and are no valid emails. 
 \end{enumerate}
-For the client side we created a bare-bones client that was generating the symbolic request, and passed it over to the server by calling the onRequest method of the server, which gets called whenever a request is sent, bypassing HTTP. 
+For the client-side, we create a bare-bones client that generates the symbolic request, and passes it over to the server by calling the onRequest method of the server, which gets called whenever a request is sent, bypassing HTTP. 
 
 \subsection{Evaluation}
-This small test application was able to prove that it is indeed possible to test a server with ExpoSE by fulfilling both requirements stated in \autoref{sec:idea}. Finding all the request routes within the server was straightforward, with one minor drawback: the regular expression route was not functional in a switch-case construct due to its use as a literal and not as a regular expression to match a string. 
-The second objective was only moderately successful, as, despite demonstrating theoretically that the generation of a string containing a script tag works, it often exceeded the timeout limit, with a few exceptions in a test of 50 runs, where a matching string was immediately generated.
+This small test application demonstrates that it is indeed possible to test a server with ExpoSE by fulfilling both requirements stated in \autoref{sec:idea}. Finding all the request routes within the server is straightforward, with one minor drawback: the regular expression route is not functional in a switch-case construct due to its use as a literal and not as a regular expression to match a string. 
+The second objective is only moderately successful, as, despite demonstrating theoretically that the generation of a string containing a script tag works, it often exceeds the timeout limit, with a few exceptions in a test of 50 runs, where a matching string was immediately generated.
 
-Despite this, we deemed the initial test application a success, as it strongly suggested that it is possible to test a server, explore all possibly routes and locate issues in the validation, data processing and usage of this data. Hence, we moved on from plain JavaScript to the usage of a framework, in our case, Express.
+Despite this, we deem the initial test application a success, as it strongly suggests that it is possible to test a server, explore all possibly routes and locate issues in the validation, data processing and usage of this data. Hence, we move on from plain JavaScript to the usage of a framework, in our case, Express.
